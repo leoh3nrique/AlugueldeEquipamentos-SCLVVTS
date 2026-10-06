@@ -47,4 +47,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 4. Adicionada validação de pelo menos um equipamento no construtor de Locacao.
 5. Executados todos os testes existentes: 6 testes passaram, sem falhas.
 
-Próximo cenário: #8, rejeitar locação com seis equipamentos.
+## Cenário #8: locação com seis equipamentos — fase de falha
+
+1. Adicionado teste de criação com seis equipamentos diferentes, esperando rejeição e nenhuma interação com o repositório.
+2. Executado `./mvnw test`: 7 testes executados, 6 passaram e apenas o cenário #8 falhou porque nenhuma exceção foi lançada.
+3. Registrado o teste em commit separado. A implementação do limite máximo ainda não foi adicionada; a issue #8 permanece pendente.
+
+Próximo passo: implementar a regra do cenário #8 e executar novamente os testes.

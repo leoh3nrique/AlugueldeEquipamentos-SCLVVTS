@@ -18,6 +18,25 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#8: rejeitar criação de locação com seis equipamentos diferentes")
+    void deveRejeitarLocacaoComSeisEquipamentos() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        List<ItemLocacao> itens = java.util.stream.IntStream.rangeClosed(1, 6)
+                .mapToObj(numero -> new ItemLocacao(
+                        new CodigoEquipamento("EQ" + numero), "Equipamento " + numero,
+                        new Dinheiro(new BigDecimal("100.00"))))
+                .toList();
+
+        assertThatThrownBy(() -> service.criar("cliente-1", periodo, itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Locação não pode possuir mais de cinco equipamentos");
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#7: rejeitar criação de locação sem equipamentos")
     void deveRejeitarLocacaoSemEquipamentos() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
