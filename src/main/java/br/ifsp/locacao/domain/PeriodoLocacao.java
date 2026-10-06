@@ -1,6 +1,7 @@
 package br.ifsp.locacao.domain;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public record PeriodoLocacao(LocalDate inicio, LocalDate fim) {
     public PeriodoLocacao {
@@ -9,6 +10,9 @@ public record PeriodoLocacao(LocalDate inicio, LocalDate fim) {
         }
         if (fim.isBefore(inicio)) {
             throw new IllegalArgumentException("Data final deve ser posterior à inicial");
+        }
+        if (ChronoUnit.DAYS.between(inicio, fim) > 30) {
+            throw new IllegalArgumentException("Período não pode ultrapassar 30 dias");
         }
     }
 }

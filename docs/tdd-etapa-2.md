@@ -31,4 +31,12 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executados todos os testes existentes: 4 testes passaram, sem falhas.
 3. O novo teste passou na primeira execução, pois a implementação já aceitava esse período. Não houve fase de falha nem alteração de produção neste cenário; o teste registra o comportamento e protege o limite válido para a próxima regra.
 
-Próximo cenário: #6, rejeitar período superior a 30 dias.
+## Cenário #6: período superior a 30 dias
+
+1. Adicionado teste de criação com período de 31 dias, esperando rejeição e nenhuma interação com o repositório.
+2. Executado somente esse teste: 1 falha, pois nenhuma exceção foi lançada.
+3. Criado commit do teste antes da implementação.
+4. Adicionada validação da duração máxima em PeriodoLocacao.
+5. Executado `./mvnw verify`: 5 testes passaram, sem falhas, e o pacote da aplicação foi gerado. O cenário #5 continua garantindo a aceitação de exatamente 30 dias.
+
+Próximo cenário: #7, rejeitar locação sem equipamentos.
