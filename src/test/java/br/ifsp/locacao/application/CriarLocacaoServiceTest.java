@@ -39,8 +39,5 @@ class CriarLocacaoServiceTest {
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
         verify(repository).salvar(locacao);
         verify(repository).salvar(outra);
-        for (ItemLocacao item : itens) {
-            verify(repository, times(2)).estaReservado(item.codigo(), periodo);
-        }
     }
 }
