@@ -18,6 +18,23 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#6: rejeitar criação com período superior a 30 dias")
+    void deveRejeitarLocacaoComPeriodoSuperiorATrintaDias() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))));
+
+        assertThatThrownBy(() -> service.criar("cliente-1",
+                new PeriodoLocacao(inicio, inicio.plusDays(31)), itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Período não pode ultrapassar 30 dias");
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#5: criar locação com período de exatamente 30 dias")
     void deveCriarLocacaoComPeriodoDeTrintaDias() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
