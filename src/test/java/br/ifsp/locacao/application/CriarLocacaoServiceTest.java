@@ -18,6 +18,28 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#10: rejeitar criação com equipamento reservado em período sobreposto")
+    void deveRejeitarLocacaoComEquipamentoJaReservado() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        CodigoEquipamento codigoReservado = new CodigoEquipamento("PROJ01");
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))),
+                new ItemLocacao(codigoReservado, "Projetor",
+                        new Dinheiro(new BigDecimal("50.00"))));
+        when(repository.estaReservado(codigoReservado, periodo)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.criar("cliente-1", periodo, itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Equipamento indisponível no período");
+        verify(repository).estaReservado(codigoReservado, periodo);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#9: rejeitar criação com códigos de equipamento repetidos")
     void deveRejeitarLocacaoComCodigosDeEquipamentoRepetidos() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

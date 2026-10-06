@@ -71,4 +71,11 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executado `./mvnw test`: 8 testes passaram, sem falhas.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #9.
 
-Próximo cenário: #10, rejeitar equipamento reservado em período sobreposto.
+## Cenário #10: equipamento reservado — fase de falha
+
+1. Adicionado teste com dois equipamentos: o primeiro disponível e o segundo reservado, conforme resposta simulada do repositório para o período solicitado.
+2. O teste exige rejeição por indisponibilidade e que a locação não seja salva.
+3. Executado `./mvnw test`: 9 testes executados, 8 passaram e apenas o cenário #10 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem implementar a consulta de disponibilidade no serviço. O cálculo de sobreposição será verificado ao implementar o repositório.
+
+Próximo passo: implementar a verificação de disponibilidade do cenário #10.
