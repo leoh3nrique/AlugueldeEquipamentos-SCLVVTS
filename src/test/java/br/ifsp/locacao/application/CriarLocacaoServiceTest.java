@@ -18,6 +18,20 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#7: rejeitar criação de locação sem equipamentos")
+    void deveRejeitarLocacaoSemEquipamentos() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+
+        assertThatThrownBy(() -> service.criar("cliente-1", periodo, List.of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Locação deve possuir pelo menos um equipamento");
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#6: rejeitar criação com período superior a 30 dias")
     void deveRejeitarLocacaoComPeriodoSuperiorATrintaDias() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
