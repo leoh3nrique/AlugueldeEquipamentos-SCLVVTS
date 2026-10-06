@@ -18,6 +18,25 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#9: rejeitar criação com códigos de equipamento repetidos")
+    void deveRejeitarLocacaoComCodigosDeEquipamentoRepetidos() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))),
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Outra descrição",
+                        new Dinheiro(new BigDecimal("50.00"))));
+
+        assertThatThrownBy(() -> service.criar("cliente-1", periodo, itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Equipamento não pode aparecer mais de uma vez na locação");
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#8: rejeitar criação de locação com seis equipamentos diferentes")
     void deveRejeitarLocacaoComSeisEquipamentos() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

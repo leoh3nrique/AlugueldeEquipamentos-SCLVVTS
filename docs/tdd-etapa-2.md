@@ -59,4 +59,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executado `./mvnw test`: 7 testes passaram, sem falhas.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #8.
 
-Próximo cenário: #9, rejeitar equipamentos com códigos repetidos.
+## Cenário #9: códigos de equipamento repetidos — fase de falha
+
+1. Adicionado teste com dois itens de mesmo código, mas descrições e diárias diferentes, para verificar a duplicidade pela identidade do equipamento.
+2. Executado `./mvnw test`: 8 testes executados, 7 passaram e apenas o cenário #9 falhou porque nenhuma exceção foi lançada.
+3. Teste registrado em commit separado, sem implementar a regra de duplicidade.
+
+Próximo passo: implementar a rejeição de códigos repetidos do cenário #9.
