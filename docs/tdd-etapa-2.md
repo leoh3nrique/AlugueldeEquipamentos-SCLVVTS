@@ -65,4 +65,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executado `./mvnw test`: 8 testes executados, 7 passaram e apenas o cenário #9 falhou porque nenhuma exceção foi lançada.
 3. Teste registrado em commit separado, sem implementar a regra de duplicidade.
 
-Próximo passo: implementar a rejeição de códigos repetidos do cenário #9.
+## Cenário #9: implementação da rejeição de códigos repetidos
+
+1. Em um passo posterior ao commit do teste, adicionada validação de códigos distintos no construtor de Locacao.
+2. Executado `./mvnw test`: 8 testes passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #9.
+
+Próximo cenário: #10, rejeitar equipamento reservado em período sobreposto.

@@ -17,6 +17,13 @@ public class Locacao {
         if (itens.size() > 5) {
             throw new IllegalArgumentException("Locação não pode possuir mais de cinco equipamentos");
         }
+        long quantidadeCodigos = itens.stream()
+                .map(ItemLocacao::codigo)
+                .distinct()
+                .count();
+        if (quantidadeCodigos != itens.size()) {
+            throw new IllegalArgumentException("Equipamento não pode aparecer mais de uma vez na locação");
+        }
         this.id = UUID.randomUUID();
         this.clienteId = clienteId;
         this.periodo = periodo;
