@@ -18,6 +18,24 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#4: rejeitar criação quando a data final é anterior à inicial")
+    void deveRejeitarLocacaoComDataFinalAnteriorAInicial() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        LocalDate fim = LocalDate.of(2026, 10, 5);
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))));
+
+        assertThatThrownBy(() -> service.criar("cliente-1",
+                new PeriodoLocacao(inicio, fim), itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Data final deve ser posterior à inicial");
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#3: rejeitar criação quando as datas inicial e final são iguais")
     void deveRejeitarLocacaoComDatasIguais() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
