@@ -10,11 +10,29 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @Tag("UnitTest")
 @Tag("TDD")
 class CriarLocacaoServiceTest {
+
+    @Test
+    @DisplayName("#3: rejeitar criação quando as datas inicial e final são iguais")
+    void deveRejeitarLocacaoComDatasIguais() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        LocalDate data = LocalDate.of(2026, 10, 6);
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))));
+
+        assertThatThrownBy(() -> service.criar("cliente-1",
+                new PeriodoLocacao(data, data), itens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Datas inicial e final devem ser diferentes");
+        verifyNoInteractions(repository);
+    }
 
     @Test
     @DisplayName("#2: criar locação com cliente, período válido e dois equipamentos disponíveis")
