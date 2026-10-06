@@ -39,4 +39,12 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 4. Adicionada validação da duração máxima em PeriodoLocacao.
 5. Executado `./mvnw verify`: 5 testes passaram, sem falhas, e o pacote da aplicação foi gerado. O cenário #5 continua garantindo a aceitação de exatamente 30 dias.
 
-Próximo cenário: #7, rejeitar locação sem equipamentos.
+## Cenário #7: locação sem equipamentos
+
+1. Adicionado teste de criação com lista vazia, esperando rejeição e nenhuma interação com o repositório.
+2. Executado somente esse teste: 1 falha, pois nenhuma exceção foi lançada.
+3. Criado commit do teste antes da implementação.
+4. Adicionada validação de pelo menos um equipamento no construtor de Locacao.
+5. Executados todos os testes existentes: 6 testes passaram, sem falhas.
+
+Próximo cenário: #8, rejeitar locação com seis equipamentos.

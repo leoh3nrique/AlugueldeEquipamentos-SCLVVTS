@@ -11,6 +11,9 @@ public class Locacao {
     private final EstadoLocacao estado;
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
+        if (itens.isEmpty()) {
+            throw new IllegalArgumentException("Locação deve possuir pelo menos um equipamento");
+        }
         this.id = UUID.randomUUID();
         this.clienteId = clienteId;
         this.periodo = periodo;
