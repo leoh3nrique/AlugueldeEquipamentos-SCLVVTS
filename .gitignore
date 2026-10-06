@@ -3,3 +3,7 @@
 .vscode/
 target/
 *.iml
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
