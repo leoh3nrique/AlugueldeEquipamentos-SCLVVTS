@@ -53,4 +53,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executado `./mvnw test`: 7 testes executados, 6 passaram e apenas o cenário #8 falhou porque nenhuma exceção foi lançada.
 3. Registrado o teste em commit separado. A implementação do limite máximo ainda não foi adicionada; a issue #8 permanece pendente.
 
-Próximo passo: implementar a regra do cenário #8 e executar novamente os testes.
+## Cenário #8: implementação do limite máximo
+
+1. Em um passo posterior ao commit do teste, adicionada validação para rejeitar mais de cinco equipamentos no construtor de Locacao.
+2. Executado `./mvnw test`: 7 testes passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #8.
+
+Próximo cenário: #9, rejeitar equipamentos com códigos repetidos.

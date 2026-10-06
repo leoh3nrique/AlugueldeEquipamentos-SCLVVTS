@@ -14,6 +14,9 @@ public class Locacao {
         if (itens.isEmpty()) {
             throw new IllegalArgumentException("Locação deve possuir pelo menos um equipamento");
         }
+        if (itens.size() > 5) {
+            throw new IllegalArgumentException("Locação não pode possuir mais de cinco equipamentos");
+        }
         this.id = UUID.randomUUID();
         this.clienteId = clienteId;
         this.periodo = periodo;
