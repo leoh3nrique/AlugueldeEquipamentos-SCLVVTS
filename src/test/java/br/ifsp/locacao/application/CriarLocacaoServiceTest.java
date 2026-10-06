@@ -18,6 +18,27 @@ import static org.mockito.Mockito.*;
 class CriarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#5: criar locação com período de exatamente 30 dias")
+    void deveCriarLocacaoComPeriodoDeTrintaDias() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(30));
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                        new Dinheiro(new BigDecimal("100.00"))));
+
+        Locacao locacao = service.criar("cliente-1", periodo, itens);
+
+        assertThat(locacao.getId()).isNotNull();
+        assertThat(locacao.getClienteId()).isEqualTo("cliente-1");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verify(repository).salvar(locacao);
+    }
+
+    @Test
     @DisplayName("#4: rejeitar criação quando a data final é anterior à inicial")
     void deveRejeitarLocacaoComDataFinalAnteriorAInicial() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

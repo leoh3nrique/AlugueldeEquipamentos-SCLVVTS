@@ -25,4 +25,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 4. Adicionada validação de data final anterior à inicial em PeriodoLocacao.
 5. Executados todos os testes existentes: 3 testes passaram, sem falhas.
 
-Próximo cenário: #5, aceitar período com exatamente 30 dias.
+## Cenário #5: período de exatamente 30 dias
+
+1. Adicionado teste de criação com data final igual à inicial mais 30 dias.
+2. Executados todos os testes existentes: 4 testes passaram, sem falhas.
+3. O novo teste passou na primeira execução, pois a implementação já aceitava esse período. Não houve fase de falha nem alteração de produção neste cenário; o teste registra o comportamento e protege o limite válido para a próxima regra.
+
+Próximo cenário: #6, rejeitar período superior a 30 dias.
