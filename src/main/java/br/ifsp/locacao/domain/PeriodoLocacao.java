@@ -7,5 +7,8 @@ public record PeriodoLocacao(LocalDate inicio, LocalDate fim) {
         if (inicio.equals(fim)) {
             throw new IllegalArgumentException("Datas inicial e final devem ser diferentes");
         }
+        if (fim.isBefore(inicio)) {
+            throw new IllegalArgumentException("Data final deve ser posterior à inicial");
+        }
     }
 }

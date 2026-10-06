@@ -17,4 +17,12 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 4. Adicionada validação de datas iguais no construtor de PeriodoLocacao.
 5. Executados todos os testes existentes: 2 testes passaram, sem falhas.
 
-Próximo cenário: #4, rejeitar data final anterior à inicial.
+## Cenário #4: data final anterior à inicial
+
+1. Adicionado teste esperando rejeição e nenhuma interação com o repositório.
+2. Executado somente esse teste: 1 falha, pois nenhuma exceção foi lançada.
+3. Criado commit do teste antes da implementação.
+4. Adicionada validação de data final anterior à inicial em PeriodoLocacao.
+5. Executados todos os testes existentes: 3 testes passaram, sem falhas.
+
+Próximo cenário: #5, aceitar período com exatamente 30 dias.
