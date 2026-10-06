@@ -78,4 +78,11 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 3. Executado `./mvnw test`: 9 testes executados, 8 passaram e apenas o cenário #10 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem implementar a consulta de disponibilidade no serviço. O cálculo de sobreposição será verificado ao implementar o repositório.
 
-Próximo passo: implementar a verificação de disponibilidade do cenário #10.
+## Cenário #10: implementação da verificação de disponibilidade
+
+1. Em um passo posterior ao commit do teste, adicionada consulta ao repositório para cada equipamento antes de salvar a locação.
+2. Se algum equipamento estiver reservado, o serviço rejeita a operação sem salvar o agregado.
+3. Executado `./mvnw test`: 9 testes passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #10. A verificação usa a interface do repositório; persistência e cálculo de sobreposição continuam pendentes.
+
+Próximo cenário: #11, rejeitar diária igual ou inferior a zero.
