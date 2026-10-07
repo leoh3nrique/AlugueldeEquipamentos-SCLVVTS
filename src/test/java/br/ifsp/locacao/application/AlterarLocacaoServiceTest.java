@@ -20,6 +20,33 @@ import static org.mockito.Mockito.*;
 class AlterarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#17: rejeitar adição de sexto equipamento à locação aberta")
+    void deveRejeitarAdicaoDeSextoEquipamento() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        List<ItemLocacao> seisItens = java.util.stream.IntStream.rangeClosed(1, 6)
+                .mapToObj(numero -> new ItemLocacao(
+                        new CodigoEquipamento("EQ" + numero), "Equipamento " + numero,
+                        new Dinheiro(new BigDecimal("100.00"))))
+                .toList();
+        List<ItemLocacao> itensOriginais = seisItens.subList(0, 5);
+        Locacao locacao = new Locacao("cliente-1", periodo, itensOriginais);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        AlterarLocacaoService service = new AlterarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.alterar(idOriginal, periodo, seisItens))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Locação não pode possuir mais de cinco equipamentos");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itensOriginais);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#16: rejeitar alteração para período superior a 30 dias")
     void deveRejeitarAlteracaoParaPeriodoSuperiorATrintaDias() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

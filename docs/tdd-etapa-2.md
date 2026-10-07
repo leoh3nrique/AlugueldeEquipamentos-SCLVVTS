@@ -153,4 +153,12 @@ O método de retirada ainda não valida data ou estado; essas regras continuam p
 3. O teste passou na primeira execução: PeriodoLocacao já rejeita mais de 30 dias desde o cenário #6. A exceção ocorre ao construir o novo período, antes da chamada ao serviço; não houve fase de falha nem alteração de produção neste cenário.
 4. Teste registrado em commit próprio, com referência de fechamento da issue #16.
 
-Próximo cenário: #17, rejeitar adição de um sexto equipamento à locação aberta.
+## Cenário #17: adição de um sexto equipamento
+
+1. Adicionado teste que cria uma locação aberta com cinco equipamentos e tenta adicionar um sexto, mantendo os itens originais na solicitação.
+2. O teste exige rejeição, preservação dos dados originais e ausência de salvamento.
+3. Executado `./mvnw test`: 16 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação do limite de cinco equipamentos já existe em Locacao e é compartilhada entre criação e alteração. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #17.
+
+Próximo cenário: #18, rejeitar remoção do único equipamento da locação aberta.
