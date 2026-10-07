@@ -20,6 +20,33 @@ import static org.mockito.Mockito.*;
 class ConfirmarRetiradaServiceTest {
 
     @Test
+    @DisplayName("#23: rejeitar nova confirmação de retirada de locação em andamento")
+    void deveRejeitarSegundaConfirmacaoDeRetirada() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodo, itens);
+        UUID idOriginal = locacao.getId();
+        locacao.confirmarRetirada(inicio);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        ConfirmarRetiradaService service = new ConfirmarRetiradaService(repository);
+
+        assertThatThrownBy(() -> service.confirmar(idOriginal, inicio.plusDays(1)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações abertas podem ter a retirada confirmada");
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#22: rejeitar retirada de locação cancelada")
     void deveRejeitarRetiradaDeLocacaoCancelada() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

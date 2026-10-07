@@ -216,4 +216,12 @@ As rejeições por data antecipada e estado continuam pendentes dos próximos ce
 
 O método cancelar() ainda não valida o estado; essas regras continuam pendentes dos cenários da US06.
 
-Próximo cenário: #23, rejeitar nova confirmação de retirada de locação já em andamento.
+## Cenário #23: segunda confirmação de retirada
+
+1. Adicionado teste que confirma a retirada no agregado para preparar EM_ANDAMENTO e tenta confirmar novamente pelo serviço no dia seguinte.
+2. O teste exige rejeição, preservação do estado e dados originais, sem salvamento.
+3. Executado `./mvnw test`: 21 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a verificação de estado ABERTA introduzida no cenário #22 já bloqueia uma segunda retirada. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #23.
+
+Próximo cenário: #24, rejeitar retirada de locação finalizada.
