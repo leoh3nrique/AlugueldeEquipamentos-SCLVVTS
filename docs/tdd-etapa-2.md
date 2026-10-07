@@ -199,4 +199,11 @@ As rejeições por data antecipada e estado continuam pendentes dos próximos ce
 2. Executado `./mvnw test`: 19 execuções passaram, sem falhas. A retirada na data inicial permanece aceita pelo cenário #20.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #21.
 
-Próximo cenário: #22, rejeitar retirada de locação cancelada.
+## Cenário #22: retirada de locação cancelada — fase de falha
+
+1. Adicionado teste que cancela uma locação aberta e tenta confirmar a retirada na data inicial.
+2. O teste exige rejeição, estado CANCELADA e dados originais preservados, sem salvamento.
+3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest#deveRejeitarRetiradaDeLocacaoCancelada test`: falha na compilação pela ausência de cancelar(). Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção. No próximo passo será necessária a transição mínima para CANCELADA usada na preparação; os demais cenários de cancelamento da US06 continuam pendentes.
+
+Próximo passo: implementar a rejeição de retirada de locação cancelada no cenário #22.
