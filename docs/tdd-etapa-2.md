@@ -122,4 +122,14 @@ Esta implementação cobre o caso válido. A rejeição por estado será introdu
 3. Executado `./mvnw -Dtest=AlterarLocacaoServiceTest#deveRejeitarAlteracaoDeLocacaoEmAndamento test`: falha na compilação pela ausência de confirmarRetirada(LocalDate). Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção. No próximo passo será necessária a transição mínima para EM_ANDAMENTO usada na preparação; os demais cenários de retirada da US03 continuam pendentes.
 
-Próximo passo: implementar a rejeição da alteração no cenário #14.
+## Cenário #14: implementação da rejeição por estado
+
+1. Adicionada a transição mínima confirmarRetirada(LocalDate) para preparar EM_ANDAMENTO, sem antecipar as validações de retirada da US03.
+2. Executado o teste do cenário #14: 1 falha, pois a alteração ainda não lançava exceção.
+3. Adicionada verificação de estado em Locacao.alterar, antes de modificar período e itens.
+4. Executado `./mvnw test`: 13 execuções passaram, sem falhas.
+5. Implementação registrada em commit separado, com referência de fechamento da issue #14.
+
+O método de retirada ainda não valida data ou estado; essas regras continuam pendentes dos cenários da US03.
+
+Próximo cenário: #15, rejeitar alteração com equipamento reservado no novo período.

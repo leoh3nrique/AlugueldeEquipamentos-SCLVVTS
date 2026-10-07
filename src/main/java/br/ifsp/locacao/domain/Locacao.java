@@ -2,13 +2,14 @@ package br.ifsp.locacao.domain;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDate;
 
 public class Locacao {
     private final UUID id;
     private final String clienteId;
     private PeriodoLocacao periodo;
     private List<ItemLocacao> itens;
-    private final EstadoLocacao estado;
+    private EstadoLocacao estado;
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
         validarItens(itens);
@@ -35,7 +36,14 @@ public class Locacao {
         }
     }
 
+    public void confirmarRetirada(LocalDate dataRetirada) {
+        this.estado = EstadoLocacao.EM_ANDAMENTO;
+    }
+
     public void alterar(PeriodoLocacao novoPeriodo, List<ItemLocacao> novosItens) {
+        if (estado != EstadoLocacao.ABERTA) {
+            throw new IllegalStateException("Somente locações abertas podem ser alteradas");
+        }
         validarItens(novosItens);
         List<ItemLocacao> copia = List.copyOf(novosItens);
         this.periodo = novoPeriodo;
