@@ -139,4 +139,11 @@ O método de retirada ainda não valida data ou estado; essas regras continuam p
 3. Executado `./mvnw test`: 14 execuções, 13 passaram e apenas o cenário #15 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar a rejeição por indisponibilidade no cenário #15.
+## Cenário #15: implementação da rejeição por indisponibilidade
+
+1. Em um passo posterior ao commit do teste, o serviço passou a rejeitar a alteração quando a consulta de disponibilidade indicar conflito.
+2. A rejeição ocorre antes de alterar o agregado ou salvá-lo, preservando os dados originais.
+3. Executado `./mvnw test`: 14 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #15.
+
+Próximo cenário: #16, rejeitar alteração para período superior a 30 dias.

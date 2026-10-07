@@ -18,7 +18,9 @@ public class AlterarLocacaoService {
     public Locacao alterar(UUID id, PeriodoLocacao periodo, List<ItemLocacao> itens) {
         Locacao locacao = repository.buscarPorId(id).orElseThrow();
         for (ItemLocacao item : itens) {
-            repository.estaReservado(item.codigo(), periodo, id);
+            if (repository.estaReservado(item.codigo(), periodo, id)) {
+                throw new IllegalArgumentException("Equipamento indisponível no período");
+            }
         }
         locacao.alterar(periodo, itens);
         repository.salvar(locacao);
