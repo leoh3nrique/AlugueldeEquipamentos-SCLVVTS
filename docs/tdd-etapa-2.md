@@ -132,4 +132,11 @@ Esta implementação cobre o caso válido. A rejeição por estado será introdu
 
 O método de retirada ainda não valida data ou estado; essas regras continuam pendentes dos cenários da US03.
 
-Próximo cenário: #15, rejeitar alteração com equipamento reservado no novo período.
+## Cenário #15: conflito de reserva no novo período — fase de falha
+
+1. Adicionado teste de alteração apenas do período de uma locação aberta com dois equipamentos. O repositório simula conflito para o segundo equipamento, excluindo a própria locação da consulta.
+2. O teste exige rejeição sem salvar ou modificar o período, os itens, o identificador e o estado originais.
+3. Executado `./mvnw test`: 14 execuções, 13 passaram e apenas o cenário #15 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição por indisponibilidade no cenário #15.

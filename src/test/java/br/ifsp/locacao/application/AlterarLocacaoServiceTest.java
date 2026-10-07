@@ -20,6 +20,37 @@ import static org.mockito.Mockito.*;
 class AlterarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#15: rejeitar alteração quando equipamento está reservado no novo período")
+    void deveRejeitarAlteracaoComEquipamentoReservadoNoNovoPeriodo() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"),
+                "Projetor", new Dinheiro(new BigDecimal("50.00")));
+        List<ItemLocacao> itensOriginais = List.of(camera, projetor);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itensOriginais);
+        UUID idOriginal = locacao.getId();
+        PeriodoLocacao novoPeriodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 12));
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        when(repository.estaReservado(projetor.codigo(), novoPeriodo, idOriginal))
+                .thenReturn(true);
+        AlterarLocacaoService service = new AlterarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.alterar(idOriginal, novoPeriodo, itensOriginais))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Equipamento indisponível no período");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itensOriginais);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verify(repository).estaReservado(projetor.codigo(), novoPeriodo, idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#14: rejeitar alteração de período e equipamentos de locação em andamento")
     void deveRejeitarAlteracaoDeLocacaoEmAndamento() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
