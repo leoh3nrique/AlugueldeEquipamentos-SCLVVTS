@@ -99,4 +99,11 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 
 Os dez cenários BDD de criação da US01 (#2 a #11) estão cobertos. Isso não encerra os requisitos adicionais de testes funcionais, persistência e API da etapa.
 
-Próximo cenário: #13, alterar período e equipamentos de uma locação aberta (US02).
+## Cenário #13: alteração de locação aberta — fase de falha
+
+1. Adicionado teste de alteração de período e equipamentos, mantendo o identificador, o cliente e o estado ABERTA.
+2. O teste mantém um equipamento original e acrescenta outro. A consulta de disponibilidade recebe o identificador da própria locação para que sua reserva não seja tratada como conflito.
+3. Executado `./mvnw -Dtest=AlterarLocacaoServiceTest test`: falha na compilação, pois AlterarLocacaoService, buscarPorId e a consulta de disponibilidade com exclusão da própria locação ainda não existem. Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem adicionar implementação de produção.
+
+Próximo passo: implementar a alteração de locação do cenário #13.
