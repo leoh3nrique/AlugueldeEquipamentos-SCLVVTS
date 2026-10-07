@@ -20,6 +20,30 @@ import static org.mockito.Mockito.*;
 class AlterarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#18: rejeitar remoção do único equipamento de locação aberta")
+    void deveRejeitarRemocaoDoUnicoEquipamento() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itensOriginais = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodo, itensOriginais);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        AlterarLocacaoService service = new AlterarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.alterar(idOriginal, periodo, List.of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Locação deve possuir pelo menos um equipamento");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itensOriginais);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#17: rejeitar adição de sexto equipamento à locação aberta")
     void deveRejeitarAdicaoDeSextoEquipamento() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

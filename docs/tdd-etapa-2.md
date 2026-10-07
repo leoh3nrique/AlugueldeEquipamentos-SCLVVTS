@@ -161,4 +161,14 @@ O método de retirada ainda não valida data ou estado; essas regras continuam p
 4. O teste passou na primeira execução: a validação do limite de cinco equipamentos já existe em Locacao e é compartilhada entre criação e alteração. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #17.
 
-Próximo cenário: #18, rejeitar remoção do único equipamento da locação aberta.
+## Cenário #18: remoção do único equipamento
+
+1. Adicionado teste que cria uma locação aberta com um equipamento e tenta alterar seus itens para uma lista vazia.
+2. O teste exige rejeição, preservação dos dados originais e ausência de salvamento.
+3. Executado `./mvnw test`: 17 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação de pelo menos um equipamento já existe em Locacao e é compartilhada entre criação e alteração. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #18.
+
+Os seis cenários BDD de alteração da US02 (#13 a #18) estão cobertos. Persistência, testes funcionais adicionais e API continuam pendentes.
+
+Próximo cenário: #20, confirmar retirada na data inicial da locação (US03).
