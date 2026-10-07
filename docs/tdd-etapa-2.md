@@ -171,4 +171,11 @@ O método de retirada ainda não valida data ou estado; essas regras continuam p
 
 Os seis cenários BDD de alteração da US02 (#13 a #18) estão cobertos. Persistência, testes funcionais adicionais e API continuam pendentes.
 
-Próximo cenário: #20, confirmar retirada na data inicial da locação (US03).
+## Cenário #20: confirmar retirada na data inicial — fase de falha
+
+1. Adicionado teste do serviço para confirmar a retirada de uma locação aberta com equipamento na data inicial.
+2. O teste exige estado EM_ANDAMENTO, preservação de identificador, cliente, período e itens, e salvamento pelo repositório.
+3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest test`: falha na compilação pela ausência de ConfirmarRetiradaService. Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção. A transição mínima do agregado já existe desde o cenário #14; falta o serviço de aplicação.
+
+Próximo passo: implementar ConfirmarRetiradaService para o cenário #20.
