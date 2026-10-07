@@ -91,4 +91,12 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 2. Executado `./mvnw test`: 11 execuções, 9 passaram e as duas entradas do cenário #11 falharam porque nenhuma exceção foi lançada.
 3. Teste registrado em commit separado, sem implementar a validação da diária.
 
-Próximo passo: implementar a rejeição de diária igual ou inferior a zero do cenário #11.
+## Cenário #11: implementação da validação da diária
+
+1. Em um passo posterior ao commit do teste, adicionada validação no construtor de ItemLocacao para rejeitar diárias iguais ou inferiores a zero.
+2. Executado `./mvnw test`: 11 execuções passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #11.
+
+Os dez cenários BDD de criação da US01 (#2 a #11) estão cobertos. Isso não encerra os requisitos adicionais de testes funcionais, persistência e API da etapa.
+
+Próximo cenário: #13, alterar período e equipamentos de uma locação aberta (US02).
