@@ -186,4 +186,11 @@ Os seis cenários BDD de alteração da US02 (#13 a #18) estão cobertos. Persis
 
 As rejeições por data antecipada e estado continuam pendentes dos próximos cenários da US03.
 
-Próximo cenário: #21, rejeitar retirada antes da data inicial.
+## Cenário #21: retirada antecipada — fase de falha
+
+1. Adicionado teste de confirmação de retirada um dia antes da data inicial.
+2. O teste exige rejeição, estado ABERTA e dados originais preservados, sem salvamento.
+3. Executado `./mvnw test`: 19 execuções, 18 passaram e apenas o cenário #21 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de retirada antecipada no cenário #21.
