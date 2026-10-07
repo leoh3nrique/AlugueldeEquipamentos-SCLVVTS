@@ -4,6 +4,8 @@ import br.ifsp.locacao.domain.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +18,25 @@ import static org.mockito.Mockito.*;
 @Tag("UnitTest")
 @Tag("TDD")
 class CriarLocacaoServiceTest {
+
+    @ParameterizedTest(name = "#11: rejeitar diária de {0}")
+    @ValueSource(strings = {"0.00", "-1.00"})
+    @DisplayName("#11: rejeitar criação com diária igual ou inferior a zero")
+    void deveRejeitarLocacaoComDiariaInvalida(String valorDiaria) {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        CriarLocacaoService service = new CriarLocacaoService(repository);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+
+        assertThatThrownBy(() -> {
+            ItemLocacao item = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                    "Câmera", new Dinheiro(new BigDecimal(valorDiaria)));
+            service.criar("cliente-1", periodo, List.of(item));
+        })
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Diária deve ser maior que zero");
+        verifyNoInteractions(repository);
+    }
 
     @Test
     @DisplayName("#10: rejeitar criação com equipamento reservado em período sobreposto")

@@ -85,4 +85,10 @@ A versão atual é incremental: ainda não garante todas as regras da proposta. 
 3. Executado `./mvnw test`: 9 testes passaram, sem falhas.
 4. Implementação registrada em commit separado, com referência de fechamento da issue #10. A verificação usa a interface do repositório; persistência e cálculo de sobreposição continuam pendentes.
 
-Próximo cenário: #11, rejeitar diária igual ou inferior a zero.
+## Cenário #11: diária igual ou inferior a zero — fase de falha
+
+1. Adicionado teste parametrizado para diárias de 0.00 e -1.00, esperando rejeição e nenhuma interação com o repositório.
+2. Executado `./mvnw test`: 11 execuções, 9 passaram e as duas entradas do cenário #11 falharam porque nenhuma exceção foi lançada.
+3. Teste registrado em commit separado, sem implementar a validação da diária.
+
+Próximo passo: implementar a rejeição de diária igual ou inferior a zero do cenário #11.
