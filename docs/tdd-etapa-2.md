@@ -115,4 +115,11 @@ Os dez cenários BDD de criação da US01 (#2 a #11) estão cobertos. Isso não 
 
 Esta implementação cobre o caso válido. A rejeição por estado será introduzida pelo cenário #14; a consulta de disponibilidade já é chamada, mas sua resposta será tratada no cenário #15, após o teste de conflito. O repositório concreto permanece pendente.
 
-Próximo cenário: #14, rejeitar alteração de locação em andamento.
+## Cenário #14: alteração de locação em andamento — fase de falha
+
+1. Adicionado teste que confirma a retirada para preparar uma locação EM_ANDAMENTO e tenta alterar período e equipamentos.
+2. O teste exige rejeição, preservação do período, itens e estado originais, e ausência de salvamento.
+3. Executado `./mvnw -Dtest=AlterarLocacaoServiceTest#deveRejeitarAlteracaoDeLocacaoEmAndamento test`: falha na compilação pela ausência de confirmarRetirada(LocalDate). Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção. No próximo passo será necessária a transição mínima para EM_ANDAMENTO usada na preparação; os demais cenários de retirada da US03 continuam pendentes.
+
+Próximo passo: implementar a rejeição da alteração no cenário #14.

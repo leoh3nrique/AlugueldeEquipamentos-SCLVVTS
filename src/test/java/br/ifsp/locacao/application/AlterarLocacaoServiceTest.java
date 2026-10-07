@@ -12,11 +12,40 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @Tag("UnitTest")
 @Tag("TDD")
 class AlterarLocacaoServiceTest {
+
+    @Test
+    @DisplayName("#14: rejeitar alteração de período e equipamentos de locação em andamento")
+    void deveRejeitarAlteracaoDeLocacaoEmAndamento() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itensOriginais = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itensOriginais);
+        locacao.confirmarRetirada(periodoOriginal.inicio());
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        when(repository.buscarPorId(locacao.getId())).thenReturn(Optional.of(locacao));
+        AlterarLocacaoService service = new AlterarLocacaoService(repository);
+        PeriodoLocacao novoPeriodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 7), LocalDate.of(2026, 10, 11));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"),
+                "Projetor", new Dinheiro(new BigDecimal("50.00")));
+
+        assertThatThrownBy(() -> service.alterar(locacao.getId(), novoPeriodo, List.of(projetor)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações abertas podem ser alteradas");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itensOriginais);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
 
     @Test
     @DisplayName("#13: alterar período e equipamentos de uma locação aberta")
