@@ -6,11 +6,20 @@ import java.util.UUID;
 public class Locacao {
     private final UUID id;
     private final String clienteId;
-    private final PeriodoLocacao periodo;
-    private final List<ItemLocacao> itens;
+    private PeriodoLocacao periodo;
+    private List<ItemLocacao> itens;
     private final EstadoLocacao estado;
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
+        validarItens(itens);
+        this.id = UUID.randomUUID();
+        this.clienteId = clienteId;
+        this.periodo = periodo;
+        this.itens = List.copyOf(itens);
+        this.estado = EstadoLocacao.ABERTA;
+    }
+
+    private static void validarItens(List<ItemLocacao> itens) {
         if (itens.isEmpty()) {
             throw new IllegalArgumentException("Locação deve possuir pelo menos um equipamento");
         }
@@ -24,11 +33,13 @@ public class Locacao {
         if (quantidadeCodigos != itens.size()) {
             throw new IllegalArgumentException("Equipamento não pode aparecer mais de uma vez na locação");
         }
-        this.id = UUID.randomUUID();
-        this.clienteId = clienteId;
-        this.periodo = periodo;
-        this.itens = List.copyOf(itens);
-        this.estado = EstadoLocacao.ABERTA;
+    }
+
+    public void alterar(PeriodoLocacao novoPeriodo, List<ItemLocacao> novosItens) {
+        validarItens(novosItens);
+        List<ItemLocacao> copia = List.copyOf(novosItens);
+        this.periodo = novoPeriodo;
+        this.itens = copia;
     }
 
     public UUID getId() { return id; }

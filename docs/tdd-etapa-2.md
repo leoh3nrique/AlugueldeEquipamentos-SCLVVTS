@@ -106,4 +106,13 @@ Os dez cenários BDD de criação da US01 (#2 a #11) estão cobertos. Isso não 
 3. Executado `./mvnw -Dtest=AlterarLocacaoServiceTest test`: falha na compilação, pois AlterarLocacaoService, buscarPorId e a consulta de disponibilidade com exclusão da própria locação ainda não existem. Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem adicionar implementação de produção.
 
-Próximo passo: implementar a alteração de locação do cenário #13.
+## Cenário #13: implementação da alteração
+
+1. Adicionados AlterarLocacaoService, busca por identificador e contrato de consulta de disponibilidade excluindo a própria locação.
+2. A alteração ocorre pela raiz Locacao, preservando identificador, cliente e estado. As validações de itens já existentes foram compartilhadas com o construtor, e a lista continua protegida contra alteração externa.
+3. Executado `./mvnw test`: 12 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #13.
+
+Esta implementação cobre o caso válido. A rejeição por estado será introduzida pelo cenário #14; a consulta de disponibilidade já é chamada, mas sua resposta será tratada no cenário #15, após o teste de conflito. O repositório concreto permanece pendente.
+
+Próximo cenário: #14, rejeitar alteração de locação em andamento.
