@@ -193,4 +193,10 @@ As rejeições por data antecipada e estado continuam pendentes dos próximos ce
 3. Executado `./mvnw test`: 19 execuções, 18 passaram e apenas o cenário #21 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar a rejeição de retirada antecipada no cenário #21.
+## Cenário #21: implementação da rejeição de retirada antecipada
+
+1. Em um passo posterior ao commit do teste, adicionada validação da data em Locacao.confirmarRetirada, antes de modificar o estado.
+2. Executado `./mvnw test`: 19 execuções passaram, sem falhas. A retirada na data inicial permanece aceita pelo cenário #20.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #21.
+
+Próximo cenário: #22, rejeitar retirada de locação cancelada.

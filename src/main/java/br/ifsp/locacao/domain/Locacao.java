@@ -37,6 +37,9 @@ public class Locacao {
     }
 
     public void confirmarRetirada(LocalDate dataRetirada) {
+        if (dataRetirada.isBefore(periodo.inicio())) {
+            throw new IllegalArgumentException("Retirada não pode ocorrer antes da data inicial");
+        }
         this.estado = EstadoLocacao.EM_ANDAMENTO;
     }
 
