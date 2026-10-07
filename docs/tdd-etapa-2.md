@@ -146,4 +146,11 @@ O método de retirada ainda não valida data ou estado; essas regras continuam p
 3. Executado `./mvnw test`: 14 execuções passaram, sem falhas.
 4. Implementação registrada em commit separado, com referência de fechamento da issue #15.
 
-Próximo cenário: #16, rejeitar alteração para período superior a 30 dias.
+## Cenário #16: alteração para período superior a 30 dias
+
+1. Adicionado teste tentando alterar uma locação aberta para um período de 31 dias, esperando rejeição, dados originais preservados e nenhuma interação com o repositório.
+2. Executado `./mvnw test`: 15 execuções passaram, sem falhas.
+3. O teste passou na primeira execução: PeriodoLocacao já rejeita mais de 30 dias desde o cenário #6. A exceção ocorre ao construir o novo período, antes da chamada ao serviço; não houve fase de falha nem alteração de produção neste cenário.
+4. Teste registrado em commit próprio, com referência de fechamento da issue #16.
+
+Próximo cenário: #17, rejeitar adição de um sexto equipamento à locação aberta.

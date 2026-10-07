@@ -20,6 +20,29 @@ import static org.mockito.Mockito.*;
 class AlterarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#16: rejeitar alteração para período superior a 30 dias")
+    void deveRejeitarAlteracaoParaPeriodoSuperiorATrintaDias() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itensOriginais = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itensOriginais);
+        AlterarLocacaoService service = new AlterarLocacaoService(repository);
+        LocalDate novoInicio = LocalDate.of(2026, 10, 7);
+
+        assertThatThrownBy(() -> service.alterar(locacao.getId(),
+                new PeriodoLocacao(novoInicio, novoInicio.plusDays(31)), itensOriginais))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Período não pode ultrapassar 30 dias");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itensOriginais);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     @DisplayName("#15: rejeitar alteração quando equipamento está reservado no novo período")
     void deveRejeitarAlteracaoComEquipamentoReservadoNoNovoPeriodo() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
