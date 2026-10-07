@@ -178,4 +178,12 @@ Os seis cenários BDD de alteração da US02 (#13 a #18) estão cobertos. Persis
 3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest test`: falha na compilação pela ausência de ConfirmarRetiradaService. Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção. A transição mínima do agregado já existe desde o cenário #14; falta o serviço de aplicação.
 
-Próximo passo: implementar ConfirmarRetiradaService para o cenário #20.
+## Cenário #20: implementação do serviço de retirada
+
+1. Em um passo posterior ao commit do teste, adicionado ConfirmarRetiradaService: busca a locação, confirma a retirada pelo agregado e salva o resultado.
+2. Executado `./mvnw test`: 18 execuções passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #20.
+
+As rejeições por data antecipada e estado continuam pendentes dos próximos cenários da US03.
+
+Próximo cenário: #21, rejeitar retirada antes da data inicial.
