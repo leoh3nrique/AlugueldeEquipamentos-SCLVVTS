@@ -206,4 +206,14 @@ As rejeições por data antecipada e estado continuam pendentes dos próximos ce
 3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest#deveRejeitarRetiradaDeLocacaoCancelada test`: falha na compilação pela ausência de cancelar(). Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção. No próximo passo será necessária a transição mínima para CANCELADA usada na preparação; os demais cenários de cancelamento da US06 continuam pendentes.
 
-Próximo passo: implementar a rejeição de retirada de locação cancelada no cenário #22.
+## Cenário #22: implementação da rejeição por estado
+
+1. Adicionada a transição mínima cancelar() para preparar CANCELADA, sem antecipar as validações de cancelamento da US06.
+2. Executado o teste do cenário #22: 1 falha, pois a retirada ainda não lançava exceção.
+3. Adicionada verificação de estado ABERTA em Locacao.confirmarRetirada, antes de modificar o estado.
+4. Executado `./mvnw test`: 20 execuções passaram, sem falhas.
+5. Implementação registrada em commit separado, com referência de fechamento da issue #22.
+
+O método cancelar() ainda não valida o estado; essas regras continuam pendentes dos cenários da US06.
+
+Próximo cenário: #23, rejeitar nova confirmação de retirada de locação já em andamento.

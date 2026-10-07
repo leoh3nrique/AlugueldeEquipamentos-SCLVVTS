@@ -36,7 +36,14 @@ public class Locacao {
         }
     }
 
+    public void cancelar() {
+        this.estado = EstadoLocacao.CANCELADA;
+    }
+
     public void confirmarRetirada(LocalDate dataRetirada) {
+        if (estado != EstadoLocacao.ABERTA) {
+            throw new IllegalStateException("Somente locações abertas podem ter a retirada confirmada");
+        }
         if (dataRetirada.isBefore(periodo.inicio())) {
             throw new IllegalArgumentException("Retirada não pode ocorrer antes da data inicial");
         }
