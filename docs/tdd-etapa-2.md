@@ -366,4 +366,12 @@ Os sete cenários BDD de renovação da US04 (#26 a #32) estão cobertos. Os tes
 
 As validações de devolução e os cálculos de multa continuam pendentes dos próximos cenários.
 
-Próximo cenário: #35, devolução parcial de um entre três equipamentos.
+## Cenário #35: devolução parcial de um entre três equipamentos
+
+1. Adicionado teste pelo serviço devolvendo apenas a câmera de uma locação com câmera, projetor e áudio, inicialmente todos pendentes.
+2. O teste exige PARCIALMENTE_DEVOLVIDA, câmera devolvida, os outros dois pendentes, dados originais preservados e salvamento.
+3. Executado `./mvnw test`: 31 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: o controle de devolução parcial introduzido no cenário #27 já atende esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #35.
+
+Próximo cenário: #36, calcular multa para dois dias de atraso.
