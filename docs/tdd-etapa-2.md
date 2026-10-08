@@ -277,4 +277,11 @@ Esta implementação cobre apenas o caso válido do teste. As restrições por e
 
 As validações de devolução, os valores e as multas continuam pendentes da US05. Os limites e as rejeições de renovação continuam pendentes dos próximos cenários.
 
-Próximo cenário: #28, rejeitar renovação solicitada após o término do período.
+## Cenário #28: renovação após o término — fase de falha
+
+1. Adicionado teste solicitando três dias adicionais um dia após o término de uma locação EM_ANDAMENTO.
+2. O teste exige rejeição, preservação do período, contador, estado e itens, sem salvamento.
+3. Executado `./mvnw test`: 25 execuções, 24 passaram e apenas o cenário #28 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de renovação após o término no cenário #28.

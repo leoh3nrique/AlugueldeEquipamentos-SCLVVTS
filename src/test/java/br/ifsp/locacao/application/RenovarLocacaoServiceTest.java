@@ -12,11 +12,39 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @Tag("UnitTest")
 @Tag("TDD")
 class RenovarLocacaoServiceTest {
+
+    @Test
+    @DisplayName("#28: rejeitar renovação solicitada após o término do período")
+    void deveRejeitarRenovacaoAposTerminoDoPeriodo() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itens);
+        locacao.confirmarRetirada(inicio);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RenovarLocacaoService service = new RenovarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.renovar(idOriginal, 3,
+                periodoOriginal.fim().plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Renovação deve ser solicitada antes da data final");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
 
     @Test
     @DisplayName("#27: renovar somente equipamentos pendentes após devolução parcial")
