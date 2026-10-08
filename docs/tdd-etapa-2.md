@@ -432,4 +432,12 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 2. Executado `./mvnw test`: 36 execuções passaram, sem falhas. A tentativa de devolução preserva a locação cancelada e não salva alterações.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #40.
 
-Próximo cenário: #41, rejeitar nova devolução de locação finalizada.
+## Cenário #41: nova devolução de locação finalizada
+
+1. Adicionado teste que finaliza a locação com devolução no prazo e tenta devolver novamente dois dias após o término.
+2. O teste exige rejeição por estado, preservação de FINALIZADA, equipamento devolvido, aluguel de 300.00, multa zero e ausência de salvamento.
+3. Executado `./mvnw test`: 37 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação de estado introduzida no cenário #40 já bloqueia devoluções de locações finalizadas, antes da verificação de equipamento repetido. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #41.
+
+Próximo cenário: #42, rejeitar devolução de locação ainda aberta.
