@@ -318,4 +318,11 @@ A condição também rejeita solicitação na própria data final, conforme a re
 2. Executado `./mvnw test`: 27 execuções passaram, sem falhas. As duas renovações usadas na preparação continuam aceitas e a terceira é rejeitada.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #30.
 
-Próximo cenário: #31, rejeitar renovação com acréscimo de oito dias.
+## Cenário #31: acréscimo de oito dias — fase de falha
+
+1. Adicionado teste solicitando oito dias adicionais antes do término de uma locação EM_ANDAMENTO, ainda sem renovações.
+2. O teste exige rejeição, preservação do prazo, contador, estado e itens, sem salvamento. O período total seria de onze dias, isolando o limite por renovação do limite de duração inicial.
+3. Executado `./mvnw test`: 28 execuções, 27 passaram e apenas o cenário #31 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar o limite de sete dias adicionais do cenário #31.

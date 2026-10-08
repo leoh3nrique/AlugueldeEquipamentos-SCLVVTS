@@ -20,6 +20,32 @@ import static org.mockito.Mockito.*;
 class RenovarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#31: rejeitar renovação com acréscimo de oito dias")
+    void deveRejeitarRenovacaoComOitoDiasAdicionais() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itens);
+        locacao.confirmarRetirada(inicio);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RenovarLocacaoService service = new RenovarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.renovar(idOriginal, 8, inicio.plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Renovação não pode acrescentar mais de sete dias");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#30: rejeitar terceira renovação de uma locação")
     void deveRejeitarTerceiraRenovacao() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
