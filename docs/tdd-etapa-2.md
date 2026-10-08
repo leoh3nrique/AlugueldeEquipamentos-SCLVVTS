@@ -312,4 +312,10 @@ A condição também rejeita solicitação na própria data final, conforme a re
 3. Executado `./mvnw test`: 27 execuções, 26 passaram e apenas o cenário #30 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar o limite de duas renovações do cenário #30.
+## Cenário #30: implementação do limite de duas renovações
+
+1. Em um passo posterior ao commit do teste, adicionada validação em Locacao.renovar rejeitando uma nova renovação quando o contador já é dois, antes de modificar prazo ou contador.
+2. Executado `./mvnw test`: 27 execuções passaram, sem falhas. As duas renovações usadas na preparação continuam aceitas e a terceira é rejeitada.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #30.
+
+Próximo cenário: #31, rejeitar renovação com acréscimo de oito dias.

@@ -64,6 +64,9 @@ public class Locacao {
         if (!dataSolicitacao.isBefore(periodo.fim())) {
             throw new IllegalArgumentException("Renovação deve ser solicitada antes da data final");
         }
+        if (quantidadeRenovacoes >= 2) {
+            throw new IllegalStateException("Locação não pode ser renovada mais de duas vezes");
+        }
         PeriodoLocacao novoPeriodo = new PeriodoLocacao(
                 periodo.inicio(), periodo.fim().plusDays(diasAdicionais));
         this.periodo = novoPeriodo;
