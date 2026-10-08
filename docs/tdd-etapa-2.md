@@ -356,4 +356,14 @@ Os sete cenários BDD de renovação da US04 (#26 a #32) estão cobertos. Os tes
 3. Executado `./mvnw -Dtest=RegistrarDevolucaoServiceTest test`: falha na compilação pela ausência de RegistrarDevolucaoService, getValorNormal, getMulta e getValorTotal. Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção.
 
-Próximo passo: implementar o serviço de devolução e o cálculo sem multa do cenário #34.
+## Cenário #34: implementação da devolução sem multa
+
+1. Adicionado RegistrarDevolucaoService para buscar a locação, registrar a devolução pelo agregado e salvar o resultado.
+2. Adicionado cálculo do valor normal somando diária multiplicada pelos dias contratados de cada item, usando BigDecimal e preservando os prazos dos itens devolvidos.
+3. Adicionados multa zero para o caso atual e total como soma do valor normal e da multa. O cálculo de atraso será introduzido pelo cenário #36.
+4. Executado `./mvnw test`: 30 execuções passaram, sem falhas.
+5. Implementação registrada em commit separado, com referência de fechamento da issue #34.
+
+As validações de devolução e os cálculos de multa continuam pendentes dos próximos cenários.
+
+Próximo cenário: #35, devolução parcial de um entre três equipamentos.

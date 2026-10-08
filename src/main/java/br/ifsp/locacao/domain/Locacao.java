@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.math.BigDecimal;
 
 public class Locacao {
     private final UUID id;
@@ -108,6 +110,24 @@ public class Locacao {
         List<ItemLocacao> copia = List.copyOf(novosItens);
         this.periodo = novoPeriodo;
         this.itens = copia;
+    }
+
+    public Dinheiro getValorNormal() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (ItemLocacao item : itens) {
+            long diasContratados = ChronoUnit.DAYS.between(
+                    periodo.inicio(), getFimContratado(item.codigo()));
+            total = total.add(item.diaria().valor().multiply(BigDecimal.valueOf(diasContratados)));
+        }
+        return new Dinheiro(total);
+    }
+
+    public Dinheiro getMulta() {
+        return new Dinheiro(BigDecimal.ZERO);
+    }
+
+    public Dinheiro getValorTotal() {
+        return new Dinheiro(getValorNormal().valor().add(getMulta().valor()));
     }
 
     public UUID getId() { return id; }
