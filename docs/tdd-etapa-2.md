@@ -224,4 +224,11 @@ O método cancelar() ainda não valida o estado; essas regras continuam pendente
 4. O teste passou na primeira execução: a verificação de estado ABERTA introduzida no cenário #22 já bloqueia uma segunda retirada. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #23.
 
-Próximo cenário: #24, rejeitar retirada de locação finalizada.
+## Cenário #24: retirada de locação finalizada — fase de falha
+
+1. Adicionado teste que confirma a retirada e devolve o único equipamento para preparar FINALIZADA, antes de tentar iniciar novamente a locação.
+2. O teste exige rejeição, preservação do estado e dados originais, sem salvamento.
+3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest#deveRejeitarRetiradaDeLocacaoFinalizada test`: falha na compilação pela ausência de registrarDevolucao(List<CodigoEquipamento>, LocalDate). Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção. O bloqueio de retirada por estado já existe; falta a preparação de FINALIZADA pelo domínio. Os demais cenários e cálculos de devolução da US05 continuam pendentes.
+
+Próximo passo: adicionar a transição de devolução necessária ao cenário #24 e executar os testes.

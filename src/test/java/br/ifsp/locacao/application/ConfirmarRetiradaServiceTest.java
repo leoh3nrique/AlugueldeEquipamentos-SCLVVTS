@@ -20,6 +20,35 @@ import static org.mockito.Mockito.*;
 class ConfirmarRetiradaServiceTest {
 
     @Test
+    @DisplayName("#24: rejeitar retirada de locação finalizada")
+    void deveRejeitarRetiradaDeLocacaoFinalizada() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        ItemLocacao camera = new ItemLocacao(codigo,
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodo, itens);
+        UUID idOriginal = locacao.getId();
+        locacao.confirmarRetirada(inicio);
+        locacao.registrarDevolucao(List.of(codigo), periodo.fim());
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.FINALIZADA);
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        ConfirmarRetiradaService service = new ConfirmarRetiradaService(repository);
+
+        assertThatThrownBy(() -> service.confirmar(idOriginal, periodo.fim()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações abertas podem ter a retirada confirmada");
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.FINALIZADA);
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#23: rejeitar nova confirmação de retirada de locação em andamento")
     void deveRejeitarSegundaConfirmacaoDeRetirada() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
