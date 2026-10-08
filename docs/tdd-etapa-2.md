@@ -450,4 +450,11 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 
 Os nove cenários BDD de devolução da US05 (#34 a #42) estão cobertos. Testes funcionais adicionais e persistência continuam pendentes.
 
-Próximo cenário: #44, cancelar locação aberta e liberar equipamentos (US06).
+## Cenário #44: cancelamento de locação aberta — fase de falha
+
+1. Adicionado teste do serviço cancelando uma locação ABERTA e preservando identificador, cliente, período e itens.
+2. O teste exige CANCELADA, salvamento e que o equipamento deixe de bloquear reservas pelo domínio.
+3. Executado `./mvnw -Dtest=CancelarLocacaoServiceTest test`: falha na compilação pela ausência de CancelarLocacaoService e bloqueiaReserva(CodigoEquipamento). Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção. A liberação efetiva nas consultas SQLite deverá usar essa regra e será verificada ao implementar o repositório concreto.
+
+Próximo passo: implementar o serviço de cancelamento e a regra de bloqueio de reserva do cenário #44.
