@@ -231,4 +231,15 @@ O método cancelar() ainda não valida o estado; essas regras continuam pendente
 3. Executado `./mvnw -Dtest=ConfirmarRetiradaServiceTest#deveRejeitarRetiradaDeLocacaoFinalizada test`: falha na compilação pela ausência de registrarDevolucao(List<CodigoEquipamento>, LocalDate). Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção. O bloqueio de retirada por estado já existe; falta a preparação de FINALIZADA pelo domínio. Os demais cenários e cálculos de devolução da US05 continuam pendentes.
 
-Próximo passo: adicionar a transição de devolução necessária ao cenário #24 e executar os testes.
+## Cenário #24: preparação de FINALIZADA e validação da rejeição
+
+1. Em um passo posterior ao commit do teste, adicionada transição mínima de devolução: ao informar todos os códigos dos equipamentos, a locação assume FINALIZADA.
+2. O bloqueio de retirada por estado existente no cenário #22 rejeita a nova retirada da locação finalizada; não foi necessário alterar essa validação.
+3. Executado `./mvnw test`: 22 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #24.
+
+A devolução ainda não registra datas ou situação por item, não trata devoluções parciais e não calcula valores ou multas. Essas regras e as validações de devolução continuam pendentes dos cenários da US05.
+
+Os cinco cenários BDD de retirada da US03 (#20 a #24) estão cobertos.
+
+Próximo cenário: #26, renovar uma locação em andamento (US04).

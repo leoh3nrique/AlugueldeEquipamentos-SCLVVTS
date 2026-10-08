@@ -50,6 +50,14 @@ public class Locacao {
         this.estado = EstadoLocacao.EM_ANDAMENTO;
     }
 
+    public void registrarDevolucao(List<CodigoEquipamento> codigos, LocalDate dataDevolucao) {
+        boolean todosEquipamentosDevolvidos = itens.stream()
+                .allMatch(item -> codigos.contains(item.codigo()));
+        if (todosEquipamentosDevolvidos) {
+            this.estado = EstadoLocacao.FINALIZADA;
+        }
+    }
+
     public void alterar(PeriodoLocacao novoPeriodo, List<ItemLocacao> novosItens) {
         if (estado != EstadoLocacao.ABERTA) {
             throw new IllegalStateException("Somente locações abertas podem ser alteradas");
