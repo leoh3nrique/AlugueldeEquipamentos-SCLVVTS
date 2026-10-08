@@ -440,4 +440,14 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 4. O teste passou na primeira execução: a validação de estado introduzida no cenário #40 já bloqueia devoluções de locações finalizadas, antes da verificação de equipamento repetido. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #41.
 
-Próximo cenário: #42, rejeitar devolução de locação ainda aberta.
+## Cenário #42: devolução de locação ainda aberta
+
+1. Adicionado teste tentando devolver o equipamento de uma locação ABERTA, sem confirmar a retirada.
+2. O teste exige rejeição, preservação do estado e dados originais, equipamento sem devolução e ausência de salvamento.
+3. Executado `./mvnw test`: 38 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação de estado introduzida no cenário #40 já bloqueia devoluções de locações abertas. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #42.
+
+Os nove cenários BDD de devolução da US05 (#34 a #42) estão cobertos. Testes funcionais adicionais e persistência continuam pendentes.
+
+Próximo cenário: #44, cancelar locação aberta e liberar equipamentos (US06).

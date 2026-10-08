@@ -20,6 +20,34 @@ import static org.mockito.Mockito.*;
 class RegistrarDevolucaoServiceTest {
 
     @Test
+    @DisplayName("#42: rejeitar devolução de locação ainda aberta")
+    void deveRejeitarDevolucaoDeLocacaoAberta() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        ItemLocacao camera = new ItemLocacao(codigo,
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RegistrarDevolucaoService service = new RegistrarDevolucaoService(repository);
+
+        assertThatThrownBy(() -> service.registrar(idOriginal, List.of(codigo), inicio.plusDays(1)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações em andamento ou parcialmente devolvidas podem receber devoluções");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactly(camera);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        assertThat(locacao.estaDevolvido(codigo)).isFalse();
+        assertThat(locacao.getMulta().valor()).isEqualByComparingTo("0.00");
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#41: rejeitar nova devolução de locação finalizada")
     void deveRejeitarDevolucaoDeLocacaoFinalizada() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
