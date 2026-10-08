@@ -390,4 +390,12 @@ As validações de devolução e os cálculos de multa continuam pendentes dos p
 
 O arredondamento de multas com frações de centavo ainda será tratado nos testes funcionais adicionais.
 
-Próximo cenário: #37, cobrar multa somente pelo equipamento devolvido com atraso.
+## Cenário #37: multa somente pelo equipamento atrasado
+
+1. Adicionado teste com câmera de diária 100.00 devolvida no prazo e projetor de diária 50.00 devolvido dois dias após o término, em duas chamadas ao serviço.
+2. O teste exige multa zero após a primeira devolução, multa final de 20.00 apenas pelo projetor, aluguel de 450.00, total de 470.00 e FINALIZADA.
+3. Executado `./mvnw test`: 33 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: o cálculo por item introduzido no cenário #36 já atende esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #37.
+
+Próximo cenário: #38, finalizar a locação ao devolver o último equipamento pendente.
