@@ -259,4 +259,12 @@ Os cinco cenários BDD de retirada da US03 (#20 a #24) estão cobertos.
 
 Esta implementação cobre apenas o caso válido do teste. As restrições por estado, data, número de renovações, dias adicionais e conflito de reserva continuam pendentes. A resposta de disponibilidade ainda não é tratada; sua rejeição será introduzida pelo cenário #32. A duração total continua sujeita ao limite atual de PeriodoLocacao, a ser revisado nos testes dos limites de renovação.
 
-Próximo cenário: #27, renovar uma locação parcialmente devolvida apenas para os equipamentos restantes.
+## Cenário #27: renovação após devolução parcial — fase de falha
+
+1. Adicionado teste com câmera devolvida e projetor pendente. A renovação solicita três dias adicionais antes do término.
+2. O teste exige manter PARCIALMENTE_DEVOLVIDA, incrementar o contador, preservar o prazo contratado da câmera e estender apenas o prazo do projetor.
+3. A disponibilidade deve ser consultada apenas para o projetor pendente, excluindo a própria locação.
+4. Executado `./mvnw -Dtest=RenovarLocacaoServiceTest#deveRenovarSomenteEquipamentosAindaNaoDevolvidos test`: falha na compilação pela ausência de estaDevolvido e getFimContratado por equipamento. Nenhum teste foi executado nessa tentativa.
+5. Teste registrado em commit separado, sem implementação de produção. A preparação da devolução parcial e o controle de prazo por item também serão necessários para satisfazer o cenário.
+
+Próximo passo: implementar a renovação dos equipamentos pendentes no cenário #27.
