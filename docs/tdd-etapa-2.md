@@ -398,4 +398,12 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 4. O teste passou na primeira execução: o cálculo por item introduzido no cenário #36 já atende esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #37.
 
-Próximo cenário: #38, finalizar a locação ao devolver o último equipamento pendente.
+## Cenário #38: devolução do último equipamento pendente
+
+1. Adicionado teste que prepara PARCIALMENTE_DEVOLVIDA com câmera e projetor devolvidos e apenas áudio pendente.
+2. A devolução do áudio pelo serviço deve finalizar a locação e considerar os três itens no valor final: 525.00 de aluguel, multa zero e total de 525.00.
+3. Executado `./mvnw test`: 34 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: o controle de devoluções e o cálculo existentes já atendem esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #38.
+
+Próximo cenário: #39, rejeitar devolução repetida do mesmo equipamento.

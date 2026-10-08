@@ -19,6 +19,47 @@ import static org.mockito.Mockito.*;
 class RegistrarDevolucaoServiceTest {
 
     @Test
+    @DisplayName("#38: finalizar locação ao devolver o último equipamento pendente")
+    void deveFinalizarAoDevolverUltimoEquipamentoPendente() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        CodigoEquipamento codigoCamera = new CodigoEquipamento("CAM01");
+        CodigoEquipamento codigoProjetor = new CodigoEquipamento("PROJ01");
+        CodigoEquipamento codigoAudio = new CodigoEquipamento("AUD01");
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(codigoCamera, "Câmera", new Dinheiro(new BigDecimal("100.00"))),
+                new ItemLocacao(codigoProjetor, "Projetor", new Dinheiro(new BigDecimal("50.00"))),
+                new ItemLocacao(codigoAudio, "Áudio", new Dinheiro(new BigDecimal("25.00"))));
+        Locacao locacao = new Locacao("cliente-1", periodo, itens);
+        locacao.confirmarRetirada(inicio);
+        locacao.registrarDevolucao(List.of(codigoCamera, codigoProjetor), inicio.plusDays(1));
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.PARCIALMENTE_DEVOLVIDA);
+        assertThat(locacao.estaDevolvido(codigoCamera)).isTrue();
+        assertThat(locacao.estaDevolvido(codigoProjetor)).isTrue();
+        assertThat(locacao.estaDevolvido(codigoAudio)).isFalse();
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RegistrarDevolucaoService service = new RegistrarDevolucaoService(repository);
+
+        Locacao finalizada = service.registrar(idOriginal, List.of(codigoAudio), periodo.fim());
+
+        assertThat(finalizada).isSameAs(locacao);
+        assertThat(finalizada.getId()).isEqualTo(idOriginal);
+        assertThat(finalizada.getPeriodo()).isEqualTo(periodo);
+        assertThat(finalizada.getItens()).containsExactlyElementsOf(itens);
+        assertThat(finalizada.getEstado()).isEqualTo(EstadoLocacao.FINALIZADA);
+        assertThat(finalizada.estaDevolvido(codigoCamera)).isTrue();
+        assertThat(finalizada.estaDevolvido(codigoProjetor)).isTrue();
+        assertThat(finalizada.estaDevolvido(codigoAudio)).isTrue();
+        assertThat(finalizada.getValorNormal().valor()).isEqualByComparingTo("525.00");
+        assertThat(finalizada.getMulta().valor()).isEqualByComparingTo("0.00");
+        assertThat(finalizada.getValorTotal().valor()).isEqualByComparingTo("525.00");
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository).salvar(finalizada);
+    }
+
+    @Test
     @DisplayName("#37: cobrar multa somente pelo equipamento devolvido com atraso")
     void deveCobrarMultaSomenteDoEquipamentoAtrasado() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
