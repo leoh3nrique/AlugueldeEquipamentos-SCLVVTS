@@ -406,4 +406,11 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 4. O teste passou na primeira execução: o controle de devoluções e o cálculo existentes já atendem esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #38.
 
-Próximo cenário: #39, rejeitar devolução repetida do mesmo equipamento.
+## Cenário #39: devolução repetida — fase de falha
+
+1. Adicionado teste que devolve a câmera no prazo e tenta devolvê-la novamente dois dias após o término, enquanto o projetor continua pendente.
+2. O teste exige rejeição, preservação da devolução original sem multa, estado PARCIALMENTE_DEVOLVIDA e ausência de salvamento.
+3. Executado `./mvnw test`: 35 execuções, 34 passaram e apenas o cenário #39 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de devolução repetida no cenário #39.

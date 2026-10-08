@@ -12,11 +12,47 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @Tag("UnitTest")
 @Tag("TDD")
 class RegistrarDevolucaoServiceTest {
+
+    @Test
+    @DisplayName("#39: rejeitar devolução repetida do mesmo equipamento")
+    void deveRejeitarDevolucaoRepetidaDoEquipamento() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        CodigoEquipamento codigoCamera = new CodigoEquipamento("CAM01");
+        CodigoEquipamento codigoProjetor = new CodigoEquipamento("PROJ01");
+        List<ItemLocacao> itens = List.of(
+                new ItemLocacao(codigoCamera, "Câmera", new Dinheiro(new BigDecimal("100.00"))),
+                new ItemLocacao(codigoProjetor, "Projetor", new Dinheiro(new BigDecimal("50.00"))));
+        Locacao locacao = new Locacao("cliente-1", periodo, itens);
+        locacao.confirmarRetirada(inicio);
+        locacao.registrarDevolucao(List.of(codigoCamera), periodo.fim());
+        assertThat(locacao.estaDevolvido(codigoCamera)).isTrue();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.PARCIALMENTE_DEVOLVIDA);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RegistrarDevolucaoService service = new RegistrarDevolucaoService(repository);
+
+        assertThatThrownBy(() -> service.registrar(idOriginal,
+                List.of(codigoCamera), periodo.fim().plusDays(2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Equipamento já foi devolvido");
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.PARCIALMENTE_DEVOLVIDA);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        assertThat(locacao.estaDevolvido(codigoCamera)).isTrue();
+        assertThat(locacao.estaDevolvido(codigoProjetor)).isFalse();
+        assertThat(locacao.getValorNormal().valor()).isEqualByComparingTo("450.00");
+        assertThat(locacao.getMulta().valor()).isEqualByComparingTo("0.00");
+        assertThat(locacao.getValorTotal().valor()).isEqualByComparingTo("450.00");
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
 
     @Test
     @DisplayName("#38: finalizar locação ao devolver o último equipamento pendente")
