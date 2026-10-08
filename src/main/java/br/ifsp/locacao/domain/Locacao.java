@@ -79,6 +79,11 @@ public class Locacao {
     }
 
     public void registrarDevolucao(List<CodigoEquipamento> codigos, LocalDate dataDevolucao) {
+        for (CodigoEquipamento codigo : codigos) {
+            if (estaDevolvido(codigo)) {
+                throw new IllegalArgumentException("Equipamento já foi devolvido");
+            }
+        }
         for (ItemLocacao item : itens) {
             if (codigos.contains(item.codigo())) {
                 datasDevolucao.put(item.codigo(), dataDevolucao);
