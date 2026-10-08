@@ -381,4 +381,13 @@ As validações de devolução e os cálculos de multa continuam pendentes dos p
 3. Executado `./mvnw test`: 32 execuções, 31 passaram e apenas o cenário #36 falhou; a multa esperada era 40.00, mas o resultado foi zero.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar o cálculo de multa do cenário #36.
+## Cenário #36: implementação do cálculo de multa
+
+1. Em um passo posterior ao commit do teste, adicionado cálculo de multa em Locacao.getMulta: para cada item devolvido após seu prazo contratado, diária multiplicada por 0.20 e pelos dias de atraso.
+2. Itens devolvidos no prazo não recebem multa; o valor total soma o aluguel contratado e as multas.
+3. Executado `./mvnw test`: 32 execuções passaram, sem falhas. O cenário #36 retorna 300.00 de aluguel, 40.00 de multa e 340.00 no total.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #36.
+
+O arredondamento de multas com frações de centavo ainda será tratado nos testes funcionais adicionais.
+
+Próximo cenário: #37, cobrar multa somente pelo equipamento devolvido com atraso.

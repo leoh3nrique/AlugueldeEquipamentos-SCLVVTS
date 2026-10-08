@@ -123,7 +123,20 @@ public class Locacao {
     }
 
     public Dinheiro getMulta() {
-        return new Dinheiro(BigDecimal.ZERO);
+        BigDecimal total = BigDecimal.ZERO;
+        for (ItemLocacao item : itens) {
+            if (estaDevolvido(item.codigo())) {
+                long diasAtraso = ChronoUnit.DAYS.between(
+                        getFimContratado(item.codigo()), datasDevolucao.get(item.codigo()));
+                if (diasAtraso > 0) {
+                    BigDecimal multaItem = item.diaria().valor()
+                            .multiply(new BigDecimal("0.20"))
+                            .multiply(BigDecimal.valueOf(diasAtraso));
+                    total = total.add(multaItem);
+                }
+            }
+        }
+        return new Dinheiro(total);
     }
 
     public Dinheiro getValorTotal() {
