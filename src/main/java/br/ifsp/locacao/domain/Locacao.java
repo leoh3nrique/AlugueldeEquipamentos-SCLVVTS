@@ -79,6 +79,11 @@ public class Locacao {
     }
 
     public void registrarDevolucao(List<CodigoEquipamento> codigos, LocalDate dataDevolucao) {
+        if (estado != EstadoLocacao.EM_ANDAMENTO
+                && estado != EstadoLocacao.PARCIALMENTE_DEVOLVIDA) {
+            throw new IllegalStateException(
+                    "Somente locações em andamento ou parcialmente devolvidas podem receber devoluções");
+        }
         for (CodigoEquipamento codigo : codigos) {
             if (estaDevolvido(codigo)) {
                 throw new IllegalArgumentException("Equipamento já foi devolvido");
