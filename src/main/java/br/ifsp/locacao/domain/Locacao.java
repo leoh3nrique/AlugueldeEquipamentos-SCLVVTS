@@ -56,6 +56,9 @@ public class Locacao {
     }
 
     public void renovar(int diasAdicionais, LocalDate dataSolicitacao) {
+        if (!dataSolicitacao.isBefore(periodo.fim())) {
+            throw new IllegalArgumentException("Renovação deve ser solicitada antes da data final");
+        }
         PeriodoLocacao novoPeriodo = new PeriodoLocacao(
                 periodo.inicio(), periodo.fim().plusDays(diasAdicionais));
         this.periodo = novoPeriodo;

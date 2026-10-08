@@ -284,4 +284,12 @@ As validações de devolução, os valores e as multas continuam pendentes da US
 3. Executado `./mvnw test`: 25 execuções, 24 passaram e apenas o cenário #28 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar a rejeição de renovação após o término no cenário #28.
+## Cenário #28: implementação da validação da data de renovação
+
+1. Em um passo posterior ao commit do teste, adicionada validação em Locacao.renovar exigindo solicitação antes da data final, antes de modificar prazo ou contador.
+2. Executado `./mvnw test`: 25 execuções passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #28.
+
+A condição também rejeita solicitação na própria data final, conforme a regra de solicitar antes do término. Esse limite ainda será coberto pelos testes funcionais adicionais.
+
+Próximo cenário: #29, rejeitar renovação de locação ainda aberta.
