@@ -340,4 +340,13 @@ Os valores limite de sete dias, zero e negativos ainda serão cobertos pelos tes
 3. Executado `./mvnw test`: 29 execuções, 28 passaram e apenas o cenário #32 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar a rejeição por indisponibilidade na renovação do cenário #32.
+## Cenário #32: implementação da rejeição por conflito de reserva
+
+1. Em um passo posterior ao commit do teste, o serviço passou a rejeitar a renovação quando a consulta indicar reserva conflitante para um equipamento pendente no período adicional.
+2. A rejeição ocorre antes de modificar o prazo e o contador ou salvar a locação. Equipamentos já devolvidos continuam excluídos da consulta.
+3. Executado `./mvnw test`: 29 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #32.
+
+Os sete cenários BDD de renovação da US04 (#26 a #32) estão cobertos. Os testes funcionais dos limites e o repositório concreto continuam pendentes.
+
+Próximo cenário: #34, devolução completa no prazo sem multa (US05).

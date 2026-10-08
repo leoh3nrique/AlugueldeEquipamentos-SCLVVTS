@@ -21,7 +21,9 @@ public class RenovarLocacaoService {
                 locacao.getPeriodo().fim(), locacao.getPeriodo().fim().plusDays(diasAdicionais));
         for (ItemLocacao item : locacao.getItens()) {
             if (!locacao.estaDevolvido(item.codigo())) {
-                repository.estaReservado(item.codigo(), periodoAdicional, id);
+                if (repository.estaReservado(item.codigo(), periodoAdicional, id)) {
+                    throw new IllegalArgumentException("Equipamento indisponível no período adicional");
+                }
             }
         }
         locacao.renovar(diasAdicionais, dataSolicitacao);
