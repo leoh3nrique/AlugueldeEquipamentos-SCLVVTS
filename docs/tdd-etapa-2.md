@@ -349,4 +349,11 @@ Os valores limite de sete dias, zero e negativos ainda serão cobertos pelos tes
 
 Os sete cenários BDD de renovação da US04 (#26 a #32) estão cobertos. Os testes funcionais dos limites e o repositório concreto continuam pendentes.
 
-Próximo cenário: #34, devolução completa no prazo sem multa (US05).
+## Cenário #34: devolução completa no prazo — fase de falha
+
+1. Adicionado teste de devolução de dois equipamentos na data final de uma locação de três dias, com diárias de 100.00 e 50.00.
+2. O teste exige FINALIZADA, ambos os equipamentos devolvidos, valor normal de 450.00, multa zero, total de 450.00 e salvamento.
+3. Executado `./mvnw -Dtest=RegistrarDevolucaoServiceTest test`: falha na compilação pela ausência de RegistrarDevolucaoService, getValorNormal, getMulta e getValorTotal. Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção.
+
+Próximo passo: implementar o serviço de devolução e o cálculo sem multa do cenário #34.
