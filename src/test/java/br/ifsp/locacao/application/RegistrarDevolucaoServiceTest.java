@@ -19,6 +19,34 @@ import static org.mockito.Mockito.*;
 class RegistrarDevolucaoServiceTest {
 
     @Test
+    @DisplayName("#36: cobrar multa de 40 reais por dois dias de atraso com diária de 100 reais")
+    void deveCalcularMultaPorDoisDiasDeAtraso() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        ItemLocacao camera = new ItemLocacao(codigo,
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        locacao.confirmarRetirada(inicio);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RegistrarDevolucaoService service = new RegistrarDevolucaoService(repository);
+
+        Locacao finalizada = service.registrar(idOriginal, List.of(codigo), periodo.fim().plusDays(2));
+
+        assertThat(finalizada).isSameAs(locacao);
+        assertThat(finalizada.getEstado()).isEqualTo(EstadoLocacao.FINALIZADA);
+        assertThat(finalizada.estaDevolvido(codigo)).isTrue();
+        assertThat(finalizada.getPeriodo()).isEqualTo(periodo);
+        assertThat(finalizada.getValorNormal().valor()).isEqualByComparingTo("300.00");
+        assertThat(finalizada.getMulta().valor()).isEqualByComparingTo("40.00");
+        assertThat(finalizada.getValorTotal().valor()).isEqualByComparingTo("340.00");
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository).salvar(finalizada);
+    }
+
+    @Test
     @DisplayName("#35: devolver apenas um de três equipamentos e manter devolução parcial")
     void deveRegistrarDevolucaoParcialDeUmEntreTresEquipamentos() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

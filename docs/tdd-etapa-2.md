@@ -374,4 +374,11 @@ As validações de devolução e os cálculos de multa continuam pendentes dos p
 4. O teste passou na primeira execução: o controle de devolução parcial introduzido no cenário #27 já atende esse comportamento. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #35.
 
-Próximo cenário: #36, calcular multa para dois dias de atraso.
+## Cenário #36: multa por dois dias de atraso — fase de falha
+
+1. Adicionado teste de locação de três dias com diária de 100.00, devolvida dois dias após a data final.
+2. O teste exige valor normal de 300.00, multa de 40.00 (20% da diária por dia de atraso), total de 340.00, FINALIZADA e salvamento.
+3. Executado `./mvnw test`: 32 execuções, 31 passaram e apenas o cenário #36 falhou; a multa esperada era 40.00, mas o resultado foi zero.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar o cálculo de multa do cenário #36.
