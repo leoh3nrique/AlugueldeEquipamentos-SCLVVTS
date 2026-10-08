@@ -250,4 +250,13 @@ Os cinco cenários BDD de retirada da US03 (#20 a #24) estão cobertos.
 4. Executado `./mvnw -Dtest=RenovarLocacaoServiceTest test`: falha na compilação pela ausência de RenovarLocacaoService e getQuantidadeRenovacoes(). Nenhum teste foi executado nessa tentativa.
 5. Teste registrado em commit separado, sem implementação de produção.
 
-Próximo passo: implementar a renovação válida do cenário #26.
+## Cenário #26: implementação da renovação válida
+
+1. Adicionados RenovarLocacaoService, extensão do período pelo agregado e contador de renovações iniciado em zero.
+2. O serviço busca a locação, consulta disponibilidade no período adicional excluindo a própria locação, renova e salva o agregado.
+3. Executado `./mvnw test`: 23 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #26.
+
+Esta implementação cobre apenas o caso válido do teste. As restrições por estado, data, número de renovações, dias adicionais e conflito de reserva continuam pendentes. A resposta de disponibilidade ainda não é tratada; sua rejeição será introduzida pelo cenário #32. A duração total continua sujeita ao limite atual de PeriodoLocacao, a ser revisado nos testes dos limites de renovação.
+
+Próximo cenário: #27, renovar uma locação parcialmente devolvida apenas para os equipamentos restantes.

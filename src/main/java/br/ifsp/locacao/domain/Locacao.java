@@ -10,6 +10,7 @@ public class Locacao {
     private PeriodoLocacao periodo;
     private List<ItemLocacao> itens;
     private EstadoLocacao estado;
+    private int quantidadeRenovacoes;
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
         validarItens(itens);
@@ -50,6 +51,13 @@ public class Locacao {
         this.estado = EstadoLocacao.EM_ANDAMENTO;
     }
 
+    public void renovar(int diasAdicionais, LocalDate dataSolicitacao) {
+        PeriodoLocacao novoPeriodo = new PeriodoLocacao(
+                periodo.inicio(), periodo.fim().plusDays(diasAdicionais));
+        this.periodo = novoPeriodo;
+        this.quantidadeRenovacoes++;
+    }
+
     public void registrarDevolucao(List<CodigoEquipamento> codigos, LocalDate dataDevolucao) {
         boolean todosEquipamentosDevolvidos = itens.stream()
                 .allMatch(item -> codigos.contains(item.codigo()));
@@ -73,4 +81,5 @@ public class Locacao {
     public PeriodoLocacao getPeriodo() { return periodo; }
     public List<ItemLocacao> getItens() { return itens; }
     public EstadoLocacao getEstado() { return estado; }
+    public int getQuantidadeRenovacoes() { return quantidadeRenovacoes; }
 }
