@@ -56,6 +56,11 @@ public class Locacao {
     }
 
     public void renovar(int diasAdicionais, LocalDate dataSolicitacao) {
+        if (estado != EstadoLocacao.EM_ANDAMENTO
+                && estado != EstadoLocacao.PARCIALMENTE_DEVOLVIDA) {
+            throw new IllegalStateException(
+                    "Somente locações em andamento ou parcialmente devolvidas podem ser renovadas");
+        }
         if (!dataSolicitacao.isBefore(periodo.fim())) {
             throw new IllegalArgumentException("Renovação deve ser solicitada antes da data final");
         }

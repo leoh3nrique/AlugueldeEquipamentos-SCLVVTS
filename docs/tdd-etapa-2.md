@@ -299,4 +299,10 @@ A condição também rejeita solicitação na própria data final, conforme a re
 3. Executado `./mvnw test`: 26 execuções, 25 passaram e apenas o cenário #29 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar a rejeição de renovação de locação aberta no cenário #29.
+## Cenário #29: implementação da validação de estado na renovação
+
+1. Em um passo posterior ao commit do teste, adicionada validação em Locacao.renovar permitindo apenas EM_ANDAMENTO ou PARCIALMENTE_DEVOLVIDA, antes de modificar prazo ou contador.
+2. Executado `./mvnw test`: 26 execuções passaram, sem falhas. Os casos válidos dos cenários #26 e #27 continuam passando.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #29.
+
+Próximo cenário: #30, rejeitar uma terceira renovação.
