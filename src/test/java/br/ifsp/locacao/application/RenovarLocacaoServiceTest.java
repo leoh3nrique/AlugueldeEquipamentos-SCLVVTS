@@ -20,6 +20,37 @@ import static org.mockito.Mockito.*;
 class RenovarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#30: rejeitar terceira renovação de uma locação")
+    void deveRejeitarTerceiraRenovacao() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itens);
+        locacao.confirmarRetirada(inicio);
+        locacao.renovar(1, inicio.plusDays(1));
+        locacao.renovar(1, inicio.plusDays(2));
+        assertThat(locacao.getQuantidadeRenovacoes()).isEqualTo(2);
+        PeriodoLocacao periodoAposDuasRenovacoes = locacao.getPeriodo();
+        assertThat(periodoAposDuasRenovacoes.fim()).isEqualTo(periodoOriginal.fim().plusDays(2));
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RenovarLocacaoService service = new RenovarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.renovar(idOriginal, 1, inicio.plusDays(3)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Locação não pode ser renovada mais de duas vezes");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoAposDuasRenovacoes);
+        assertThat(locacao.getQuantidadeRenovacoes()).isEqualTo(2);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#29: rejeitar renovação de locação ainda aberta")
     void deveRejeitarRenovacaoDeLocacaoAberta() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

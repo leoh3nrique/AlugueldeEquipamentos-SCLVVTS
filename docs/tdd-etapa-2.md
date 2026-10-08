@@ -305,4 +305,11 @@ A condição também rejeita solicitação na própria data final, conforme a re
 2. Executado `./mvnw test`: 26 execuções passaram, sem falhas. Os casos válidos dos cenários #26 e #27 continuam passando.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #29.
 
-Próximo cenário: #30, rejeitar uma terceira renovação.
+## Cenário #30: terceira renovação — fase de falha
+
+1. Adicionado teste que prepara duas renovações válidas de um dia cada e tenta uma terceira antes do término atual.
+2. O teste exige rejeição, preservação do prazo após as duas renovações e contador em dois, sem salvamento.
+3. Executado `./mvnw test`: 27 execuções, 26 passaram e apenas o cenário #30 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar o limite de duas renovações do cenário #30.
