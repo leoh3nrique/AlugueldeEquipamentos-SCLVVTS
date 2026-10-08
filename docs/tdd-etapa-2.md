@@ -419,4 +419,11 @@ O arredondamento de multas com frações de centavo ainda será tratado nos test
 2. Executado `./mvnw test`: 35 execuções passaram, sem falhas. A tentativa repetida não substitui a devolução original nem gera multa indevida.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #39.
 
-Próximo cenário: #40, rejeitar devolução de locação cancelada.
+## Cenário #40: devolução de locação cancelada — fase de falha
+
+1. Adicionado teste que cancela uma locação aberta e tenta devolver seu equipamento na data final.
+2. O teste exige rejeição, preservação de CANCELADA e do equipamento sem devolução, sem multa ou salvamento.
+3. Executado `./mvnw test`: 36 execuções, 35 passaram e apenas o cenário #40 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de devolução de locação cancelada no cenário #40.
