@@ -267,4 +267,14 @@ Esta implementação cobre apenas o caso válido do teste. As restrições por e
 4. Executado `./mvnw -Dtest=RenovarLocacaoServiceTest#deveRenovarSomenteEquipamentosAindaNaoDevolvidos test`: falha na compilação pela ausência de estaDevolvido e getFimContratado por equipamento. Nenhum teste foi executado nessa tentativa.
 5. Teste registrado em commit separado, sem implementação de produção. A preparação da devolução parcial e o controle de prazo por item também serão necessários para satisfazer o cenário.
 
-Próximo passo: implementar a renovação dos equipamentos pendentes no cenário #27.
+## Cenário #27: implementação da renovação após devolução parcial
+
+1. Adicionado controle interno de datas de devolução e prazos contratados dos equipamentos devolvidos na raiz Locacao, sem expor coleções mutáveis.
+2. A devolução de parte dos equipamentos prepara PARCIALMENTE_DEVOLVIDA; a devolução de todos prepara FINALIZADA.
+3. A renovação consulta disponibilidade apenas dos equipamentos pendentes. O prazo dos devolvidos permanece congelado no término contratado quando foram devolvidos; os pendentes acompanham o novo término da locação.
+4. Executado `./mvnw test`: 24 execuções passaram, sem falhas.
+5. Implementação registrada em commit separado, com referência de fechamento da issue #27.
+
+As validações de devolução, os valores e as multas continuam pendentes da US05. Os limites e as rejeições de renovação continuam pendentes dos próximos cenários.
+
+Próximo cenário: #28, rejeitar renovação solicitada após o término do período.

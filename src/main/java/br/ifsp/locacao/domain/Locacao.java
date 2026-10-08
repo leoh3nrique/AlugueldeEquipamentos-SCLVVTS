@@ -2,6 +2,8 @@ package br.ifsp.locacao.domain;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 import java.time.LocalDate;
 
 public class Locacao {
@@ -11,6 +13,8 @@ public class Locacao {
     private List<ItemLocacao> itens;
     private EstadoLocacao estado;
     private int quantidadeRenovacoes;
+    private final Map<CodigoEquipamento, LocalDate> datasDevolucao = new HashMap<>();
+    private final Map<CodigoEquipamento, LocalDate> prazosDosDevolvidos = new HashMap<>();
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
         validarItens(itens);
@@ -59,11 +63,27 @@ public class Locacao {
     }
 
     public void registrarDevolucao(List<CodigoEquipamento> codigos, LocalDate dataDevolucao) {
+        for (ItemLocacao item : itens) {
+            if (codigos.contains(item.codigo())) {
+                datasDevolucao.put(item.codigo(), dataDevolucao);
+                prazosDosDevolvidos.put(item.codigo(), periodo.fim());
+            }
+        }
         boolean todosEquipamentosDevolvidos = itens.stream()
-                .allMatch(item -> codigos.contains(item.codigo()));
+                .allMatch(item -> estaDevolvido(item.codigo()));
         if (todosEquipamentosDevolvidos) {
             this.estado = EstadoLocacao.FINALIZADA;
+        } else if (!datasDevolucao.isEmpty()) {
+            this.estado = EstadoLocacao.PARCIALMENTE_DEVOLVIDA;
         }
+    }
+
+    public boolean estaDevolvido(CodigoEquipamento codigo) {
+        return datasDevolucao.containsKey(codigo);
+    }
+
+    public LocalDate getFimContratado(CodigoEquipamento codigo) {
+        return prazosDosDevolvidos.getOrDefault(codigo, periodo.fim());
     }
 
     public void alterar(PeriodoLocacao novoPeriodo, List<ItemLocacao> novosItens) {

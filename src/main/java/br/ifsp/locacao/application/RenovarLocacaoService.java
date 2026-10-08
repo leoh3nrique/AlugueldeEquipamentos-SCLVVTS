@@ -20,7 +20,9 @@ public class RenovarLocacaoService {
         PeriodoLocacao periodoAdicional = new PeriodoLocacao(
                 locacao.getPeriodo().fim(), locacao.getPeriodo().fim().plusDays(diasAdicionais));
         for (ItemLocacao item : locacao.getItens()) {
-            repository.estaReservado(item.codigo(), periodoAdicional, id);
+            if (!locacao.estaDevolvido(item.codigo())) {
+                repository.estaReservado(item.codigo(), periodoAdicional, id);
+            }
         }
         locacao.renovar(diasAdicionais, dataSolicitacao);
         repository.salvar(locacao);
