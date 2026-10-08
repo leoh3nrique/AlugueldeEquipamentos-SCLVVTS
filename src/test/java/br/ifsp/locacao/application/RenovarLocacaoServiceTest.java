@@ -20,6 +20,40 @@ import static org.mockito.Mockito.*;
 class RenovarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#32: rejeitar renovação com equipamento reservado no período adicional")
+    void deveRejeitarRenovacaoComConflitoDeReserva() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"),
+                "Projetor", new Dinheiro(new BigDecimal("50.00")));
+        List<ItemLocacao> itens = List.of(camera, projetor);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itens);
+        locacao.confirmarRetirada(inicio);
+        UUID idOriginal = locacao.getId();
+        PeriodoLocacao periodoAdicional = new PeriodoLocacao(
+                periodoOriginal.fim(), periodoOriginal.fim().plusDays(3));
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        when(repository.estaReservado(projetor.codigo(), periodoAdicional, idOriginal))
+                .thenReturn(true);
+        RenovarLocacaoService service = new RenovarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.renovar(idOriginal, 3, inicio.plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Equipamento indisponível no período adicional");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        assertThat(locacao.estaDevolvido(projetor.codigo())).isFalse();
+        verify(repository).estaReservado(projetor.codigo(), periodoAdicional, idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#31: rejeitar renovação com acréscimo de oito dias")
     void deveRejeitarRenovacaoComOitoDiasAdicionais() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

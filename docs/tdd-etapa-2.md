@@ -333,4 +333,11 @@ A condição também rejeita solicitação na própria data final, conforme a re
 
 Os valores limite de sete dias, zero e negativos ainda serão cobertos pelos testes funcionais adicionais.
 
-Próximo cenário: #32, rejeitar renovação quando equipamento pendente está reservado no período adicional.
+## Cenário #32: conflito de reserva na renovação — fase de falha
+
+1. Adicionado teste de renovação com dois equipamentos pendentes, simulando conflito para o segundo no período adicional e excluindo a própria locação da consulta.
+2. O teste exige rejeição, preservação do prazo, contador, estado e itens, sem salvamento.
+3. Executado `./mvnw test`: 29 execuções, 28 passaram e apenas o cenário #32 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição por indisponibilidade na renovação do cenário #32.
