@@ -325,4 +325,12 @@ A condição também rejeita solicitação na própria data final, conforme a re
 3. Executado `./mvnw test`: 28 execuções, 27 passaram e apenas o cenário #31 falhou porque nenhuma exceção foi lançada.
 4. Teste registrado em commit separado, sem modificar a implementação.
 
-Próximo passo: implementar o limite de sete dias adicionais do cenário #31.
+## Cenário #31: implementação do limite de sete dias adicionais
+
+1. Em um passo posterior ao commit do teste, adicionada validação em Locacao.renovar para rejeitar acréscimos superiores a sete dias, antes de modificar prazo ou contador.
+2. Executado `./mvnw test`: 28 execuções passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #31.
+
+Os valores limite de sete dias, zero e negativos ainda serão cobertos pelos testes funcionais adicionais.
+
+Próximo cenário: #32, rejeitar renovação quando equipamento pendente está reservado no período adicional.

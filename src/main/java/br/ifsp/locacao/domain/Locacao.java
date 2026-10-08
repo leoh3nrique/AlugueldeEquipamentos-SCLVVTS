@@ -67,6 +67,9 @@ public class Locacao {
         if (quantidadeRenovacoes >= 2) {
             throw new IllegalStateException("Locação não pode ser renovada mais de duas vezes");
         }
+        if (diasAdicionais > 7) {
+            throw new IllegalArgumentException("Renovação não pode acrescentar mais de sete dias");
+        }
         PeriodoLocacao novoPeriodo = new PeriodoLocacao(
                 periodo.inicio(), periodo.fim().plusDays(diasAdicionais));
         this.periodo = novoPeriodo;
