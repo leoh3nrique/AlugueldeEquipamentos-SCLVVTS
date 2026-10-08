@@ -242,4 +242,12 @@ A devolução ainda não registra datas ou situação por item, não trata devol
 
 Os cinco cenários BDD de retirada da US03 (#20 a #24) estão cobertos.
 
-Próximo cenário: #26, renovar uma locação em andamento (US04).
+## Cenário #26: renovação de locação em andamento — fase de falha
+
+1. Adicionado teste solicitando três dias adicionais antes do término de uma locação EM_ANDAMENTO, com equipamento disponível conforme resposta simulada do repositório.
+2. O teste exige extensão da data final, incremento de zero para uma renovação, preservação de identificador, cliente, início, itens e estado, e salvamento.
+3. A consulta de disponibilidade cobre apenas o período adicional e exclui a própria locação.
+4. Executado `./mvnw -Dtest=RenovarLocacaoServiceTest test`: falha na compilação pela ausência de RenovarLocacaoService e getQuantidadeRenovacoes(). Nenhum teste foi executado nessa tentativa.
+5. Teste registrado em commit separado, sem implementação de produção.
+
+Próximo passo: implementar a renovação válida do cenário #26.
