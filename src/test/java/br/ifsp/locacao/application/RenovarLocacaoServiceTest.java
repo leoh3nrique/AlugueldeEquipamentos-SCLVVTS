@@ -20,6 +20,32 @@ import static org.mockito.Mockito.*;
 class RenovarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#29: rejeitar renovação de locação ainda aberta")
+    void deveRejeitarRenovacaoDeLocacaoAberta() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodoOriginal = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = List.of(camera);
+        Locacao locacao = new Locacao("cliente-1", periodoOriginal, itens);
+        UUID idOriginal = locacao.getId();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        RenovarLocacaoService service = new RenovarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.renovar(idOriginal, 3, inicio.plusDays(1)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações em andamento ou parcialmente devolvidas podem ser renovadas");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodoOriginal);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        assertThat(locacao.getItens()).containsExactlyElementsOf(itens);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#28: rejeitar renovação solicitada após o término do período")
     void deveRejeitarRenovacaoAposTerminoDoPeriodo() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

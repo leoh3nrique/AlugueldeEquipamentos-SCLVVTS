@@ -292,4 +292,11 @@ As validações de devolução, os valores e as multas continuam pendentes da US
 
 A condição também rejeita solicitação na própria data final, conforme a regra de solicitar antes do término. Esse limite ainda será coberto pelos testes funcionais adicionais.
 
-Próximo cenário: #29, rejeitar renovação de locação ainda aberta.
+## Cenário #29: renovação de locação aberta — fase de falha
+
+1. Adicionado teste solicitando três dias adicionais antes do término de uma locação ABERTA, sem confirmar sua retirada.
+2. O teste exige rejeição, preservação do período, contador, estado e itens, sem salvamento.
+3. Executado `./mvnw test`: 26 execuções, 25 passaram e apenas o cenário #29 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de renovação de locação aberta no cenário #29.
