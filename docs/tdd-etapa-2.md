@@ -528,4 +528,10 @@ Filtro por estado e ordenação continuam pendentes dos próximos cenários. A l
 3. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência da consulta que recebe cliente e estado. Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção.
 
-Próximo passo: implementar o filtro por estado do cenário #51.
+## Cenário #51: implementação do filtro por estado
+
+1. Em um passo posterior ao commit do teste, adicionada consulta que recebe cliente e estado, reutilizando o filtro por cliente e selecionando apenas locações no estado solicitado.
+2. Executado `./mvnw test`: 45 execuções passaram, sem falhas.
+3. Implementação registrada em commit separado, com referência de fechamento da issue #51.
+
+Próximo cenário: #52, ordenar as locações da mais recente para a mais antiga.
