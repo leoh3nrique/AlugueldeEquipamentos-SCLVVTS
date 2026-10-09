@@ -7,6 +7,8 @@ import br.ifsp.locacao.domain.PeriodoLocacao;
 
 import java.util.List;
 
+@org.springframework.stereotype.Service
+@org.springframework.transaction.annotation.Transactional
 public class CriarLocacaoService {
     private final LocacaoRepository repository;
 

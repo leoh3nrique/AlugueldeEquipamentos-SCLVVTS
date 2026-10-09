@@ -8,6 +8,8 @@ import br.ifsp.locacao.domain.PeriodoLocacao;
 import java.util.List;
 import java.util.UUID;
 
+@org.springframework.stereotype.Service
+@org.springframework.transaction.annotation.Transactional
 public class AlterarLocacaoService {
     private final LocacaoRepository repository;
 
@@ -16,7 +18,7 @@ public class AlterarLocacaoService {
     }
 
     public Locacao alterar(UUID id, PeriodoLocacao periodo, List<ItemLocacao> itens) {
-        Locacao locacao = repository.buscarPorId(id).orElseThrow();
+        Locacao locacao = repository.buscarPorId(id).orElseThrow(() -> new java.util.NoSuchElementException("Locação não encontrada"));
         for (ItemLocacao item : itens) {
             if (repository.estaReservado(item.codigo(), periodo, id)) {
                 throw new IllegalArgumentException("Equipamento indisponível no período");

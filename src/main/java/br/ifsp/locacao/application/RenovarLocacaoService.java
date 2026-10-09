@@ -8,6 +8,8 @@ import br.ifsp.locacao.domain.PeriodoLocacao;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@org.springframework.stereotype.Service
+@org.springframework.transaction.annotation.Transactional
 public class RenovarLocacaoService {
     private final LocacaoRepository repository;
 
@@ -16,7 +18,7 @@ public class RenovarLocacaoService {
     }
 
     public Locacao renovar(UUID id, int diasAdicionais, LocalDate dataSolicitacao) {
-        Locacao locacao = repository.buscarPorId(id).orElseThrow();
+        Locacao locacao = repository.buscarPorId(id).orElseThrow(() -> new java.util.NoSuchElementException("Locação não encontrada"));
         locacao.validarRenovacao(diasAdicionais, dataSolicitacao);
         PeriodoLocacao periodoAdicional = new PeriodoLocacao(
                 locacao.getPeriodo().fim(), locacao.getPeriodo().fim().plusDays(diasAdicionais));

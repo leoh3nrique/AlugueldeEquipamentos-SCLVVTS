@@ -6,6 +6,8 @@ import br.ifsp.locacao.domain.LocacaoRepository;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@org.springframework.stereotype.Service
+@org.springframework.transaction.annotation.Transactional
 public class ConfirmarRetiradaService {
     private final LocacaoRepository repository;
 
@@ -14,7 +16,7 @@ public class ConfirmarRetiradaService {
     }
 
     public Locacao confirmar(UUID id, LocalDate dataRetirada) {
-        Locacao locacao = repository.buscarPorId(id).orElseThrow();
+        Locacao locacao = repository.buscarPorId(id).orElseThrow(() -> new java.util.NoSuchElementException("Locação não encontrada"));
         locacao.confirmarRetirada(dataRetirada);
         repository.salvar(locacao);
         return locacao;
