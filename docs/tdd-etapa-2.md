@@ -487,4 +487,14 @@ As rejeições de cancelamento por estado continuam pendentes dos próximos cen�
 4. O teste passou na primeira execução: a validação de estado introduzida no cenário #45 já bloqueia novo cancelamento. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #46.
 
-Próximo cenário: #47, rejeitar cancelamento de locação parcialmente devolvida.
+## Cenário #47: cancelamento após devolução parcial
+
+1. Adicionado teste que devolve apenas a câmera de uma locação com câmera e projetor e tenta cancelar pelo serviço.
+2. O teste exige rejeição, preservação de PARCIALMENTE_DEVOLVIDA e dos itens, câmera devolvida, projetor pendente e bloqueando reserva, sem salvamento.
+3. Executado `./mvnw test`: 42 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação de estado introduzida no cenário #45 já bloqueia cancelamento de locações parcialmente devolvidas. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #47.
+
+Os quatro cenários BDD de cancelamento da US06 (#44 a #47) estão cobertos. A liberação efetiva de reservas no SQLite continua pendente do repositório concreto.
+
+Próximo cenário: #49, consultar somente as locações do cliente informado (US07).
