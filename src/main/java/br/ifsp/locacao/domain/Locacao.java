@@ -27,7 +27,12 @@ public class Locacao {
     }
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock) {
-        this(clienteId, periodo, itens, clock, UUID.randomUUID());
+        this(clienteId, validarPeriodoInicial(periodo), itens, clock, UUID.randomUUID());
+    }
+
+    private static PeriodoLocacao validarPeriodoInicial(PeriodoLocacao periodo) {
+        if (periodo == null) throw new IllegalArgumentException("Período é obrigatório");
+        return new PeriodoLocacao(periodo.inicio(), periodo.fim());
     }
 
     private Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock, UUID id) {
