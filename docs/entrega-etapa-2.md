@@ -27,7 +27,7 @@ Esses casos usam particionamento de equivalência, análise de valores limite e 
 - [Issue #53 — regras de domínio expostas pelos testes funcionais](https://github.com/leoh3nrique/AlugueldeEquipamentos-SCLVVTS/issues/53): os primeiros testes funcionais tiveram nove falhas e um erro. Correções incluem entradas obrigatórias, datas e lotes de devolução, renovação com zero ou valor negativo, renovação após reserva de 30 dias, liberação de equipamentos devolvidos e arredondamento de multa. Commit de correção `410531e`.
 - [Issue #54 — reutilização de período estendido na criação](https://github.com/leoh3nrique/AlugueldeEquipamentos-SCLVVTS/issues/54): teste falhou antes da correção; a criação pública agora valida novamente o limite inicial de 30 dias. Commit de correção `a352c6b`.
 
-Ambas foram abertas com label bug e fechadas pelas mensagens de commit após o push.
+Ambas foram abertas com label bug; os commits de correção incluem `- closes #53` e `- closes #54`. Após o push, as issues ainda apareciam abertas na verificação, então seu fechamento foi realizado explicitamente e confirmado no GitHub.
 
 ## Resultado final
 
