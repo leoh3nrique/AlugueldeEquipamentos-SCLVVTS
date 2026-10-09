@@ -504,4 +504,13 @@ Os quatro cenários BDD de cancelamento da US06 (#44 a #47) estão cobertos. A l
 3. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência de ConsultarLocacoesService e listar() no repositório. Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção.
 
-Próximo passo: implementar a consulta por cliente do cenário #49.
+## Cenário #49: implementação da consulta por cliente
+
+1. Em um passo posterior ao commit do teste, adicionados listar() ao contrato do repositório e ConsultarLocacoesService.
+2. O serviço filtra as locações pelo identificador do cliente, preservando os agregados e sem salvar alterações.
+3. Executado `./mvnw test`: 43 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #49.
+
+Filtro por estado e ordenação continuam pendentes dos próximos cenários. A leitura efetiva do SQLite permanece pendente do repositório concreto.
+
+Próximo cenário: #50, retornar lista vazia para cliente sem locações.
