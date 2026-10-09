@@ -17,6 +17,7 @@ public class RenovarLocacaoService {
 
     public Locacao renovar(UUID id, int diasAdicionais, LocalDate dataSolicitacao) {
         Locacao locacao = repository.buscarPorId(id).orElseThrow();
+        locacao.validarRenovacao(diasAdicionais, dataSolicitacao);
         PeriodoLocacao periodoAdicional = new PeriodoLocacao(
                 locacao.getPeriodo().fim(), locacao.getPeriodo().fim().plusDays(diasAdicionais));
         for (ItemLocacao item : locacao.getItens()) {

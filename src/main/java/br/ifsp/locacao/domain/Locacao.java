@@ -18,6 +18,7 @@ public class Locacao {
     private List<ItemLocacao> itens;
     private EstadoLocacao estado;
     private int quantidadeRenovacoes;
+    private LocalDate dataRetirada;
     private final Map<CodigoEquipamento, LocalDate> datasDevolucao = new HashMap<>();
     private final Map<CodigoEquipamento, LocalDate> prazosDosDevolvidos = new HashMap<>();
 
@@ -26,6 +27,7 @@ public class Locacao {
     }
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock) {
+        if (clienteId == null || clienteId.isBlank() || periodo == null || clock == null) throw new IllegalArgumentException("Cliente, período e relógio são obrigatórios");
         validarItens(itens);
         this.id = UUID.randomUUID();
         this.clienteId = clienteId;
@@ -36,6 +38,7 @@ public class Locacao {
     }
 
     private static void validarItens(List<ItemLocacao> itens) {
+        if (itens == null || itens.stream().anyMatch(java.util.Objects::isNull)) throw new IllegalArgumentException("Itens são obrigatórios");
         if (itens.isEmpty()) {
             throw new IllegalArgumentException("Locação deve possuir pelo menos um equipamento");
         }
@@ -59,7 +62,8 @@ public class Locacao {
     }
 
     public boolean bloqueiaReserva(CodigoEquipamento codigo) {
-        return estado != EstadoLocacao.CANCELADA
+        return estado != EstadoLocacao.CANCELADA && estado != EstadoLocacao.FINALIZADA
+                && !estaDevolvido(codigo)
                 && itens.stream().anyMatch(item -> item.codigo().equals(codigo));
     }
 
@@ -67,29 +71,37 @@ public class Locacao {
         if (estado != EstadoLocacao.ABERTA) {
             throw new IllegalStateException("Somente locações abertas podem ter a retirada confirmada");
         }
+        if (dataRetirada == null) throw new IllegalArgumentException("Data de retirada é obrigatória");
         if (dataRetirada.isBefore(periodo.inicio())) {
             throw new IllegalArgumentException("Retirada não pode ocorrer antes da data inicial");
         }
+        this.dataRetirada = dataRetirada;
         this.estado = EstadoLocacao.EM_ANDAMENTO;
     }
 
-    public void renovar(int diasAdicionais, LocalDate dataSolicitacao) {
+    public void validarRenovacao(int diasAdicionais, LocalDate dataSolicitacao) {
         if (estado != EstadoLocacao.EM_ANDAMENTO
                 && estado != EstadoLocacao.PARCIALMENTE_DEVOLVIDA) {
             throw new IllegalStateException(
                     "Somente locações em andamento ou parcialmente devolvidas podem ser renovadas");
         }
+        if (dataSolicitacao == null) throw new IllegalArgumentException("Data da solicitação é obrigatória");
+        if (dataSolicitacao.isBefore(dataRetirada)) throw new IllegalArgumentException("Solicitação não pode anteceder a retirada");
         if (!dataSolicitacao.isBefore(periodo.fim())) {
             throw new IllegalArgumentException("Renovação deve ser solicitada antes da data final");
         }
         if (quantidadeRenovacoes >= 2) {
             throw new IllegalStateException("Locação não pode ser renovada mais de duas vezes");
         }
+        if (diasAdicionais < 1) throw new IllegalArgumentException("Renovação deve acrescentar pelo menos um dia");
         if (diasAdicionais > 7) {
             throw new IllegalArgumentException("Renovação não pode acrescentar mais de sete dias");
         }
-        PeriodoLocacao novoPeriodo = new PeriodoLocacao(
-                periodo.inicio(), periodo.fim().plusDays(diasAdicionais));
+    }
+
+    public void renovar(int diasAdicionais, LocalDate dataSolicitacao) {
+        validarRenovacao(diasAdicionais, dataSolicitacao);
+        PeriodoLocacao novoPeriodo = periodo.estender(diasAdicionais);
         this.periodo = novoPeriodo;
         this.quantidadeRenovacoes++;
     }
@@ -100,7 +112,10 @@ public class Locacao {
             throw new IllegalStateException(
                     "Somente locações em andamento ou parcialmente devolvidas podem receber devoluções");
         }
+        if (dataDevolucao == null || dataDevolucao.isBefore(dataRetirada)) throw new IllegalArgumentException("Devolução não pode anteceder a retirada");
+        if (codigos == null || codigos.isEmpty() || codigos.stream().anyMatch(java.util.Objects::isNull) || codigos.stream().distinct().count() != codigos.size()) throw new IllegalArgumentException("Informe equipamentos distintos para devolver");
         for (CodigoEquipamento codigo : codigos) {
+            if (itens.stream().noneMatch(i -> i.codigo().equals(codigo))) throw new IllegalArgumentException("Equipamento não pertence à locação");
             if (estaDevolvido(codigo)) {
                 throw new IllegalArgumentException("Equipamento já foi devolvido");
             }
@@ -132,6 +147,8 @@ public class Locacao {
         if (estado != EstadoLocacao.ABERTA) {
             throw new IllegalStateException("Somente locações abertas podem ser alteradas");
         }
+        if (novoPeriodo == null) throw new IllegalArgumentException("Período é obrigatório");
+        new PeriodoLocacao(novoPeriodo.inicio(), novoPeriodo.fim());
         validarItens(novosItens);
         List<ItemLocacao> copia = List.copyOf(novosItens);
         this.periodo = novoPeriodo;
@@ -158,7 +175,7 @@ public class Locacao {
                     BigDecimal multaItem = item.diaria().valor()
                             .multiply(new BigDecimal("0.20"))
                             .multiply(BigDecimal.valueOf(diasAtraso));
-                    total = total.add(multaItem);
+                    total = total.add(new Dinheiro(multaItem).valor());
                 }
             }
         }
