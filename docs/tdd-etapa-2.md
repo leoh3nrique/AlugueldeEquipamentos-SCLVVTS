@@ -513,4 +513,12 @@ Os quatro cenários BDD de cancelamento da US06 (#44 a #47) estão cobertos. A l
 
 Filtro por estado e ordenação continuam pendentes dos próximos cenários. A leitura efetiva do SQLite permanece pendente do repositório concreto.
 
-Próximo cenário: #50, retornar lista vazia para cliente sem locações.
+## Cenário #50: cliente sem locações
+
+1. Adicionado teste com uma locação de outro cliente no repositório, consultando um cliente sem locações cadastradas.
+2. O teste exige lista não nula e vazia, sem salvamento ou alteração da locação do outro cliente.
+3. Executado `./mvnw test`: 44 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: o filtro por cliente do cenário #49 já retorna lista vazia quando não encontra correspondências. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #50.
+
+Próximo cenário: #51, filtrar locações do cliente pelo estado EM_ANDAMENTO.

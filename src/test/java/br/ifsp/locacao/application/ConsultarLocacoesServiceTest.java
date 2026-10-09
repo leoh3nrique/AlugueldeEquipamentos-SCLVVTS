@@ -17,6 +17,27 @@ import static org.mockito.Mockito.*;
 class ConsultarLocacoesServiceTest {
 
     @Test
+    @DisplayName("#50: retornar lista vazia para cliente sem locações")
+    void deveRetornarListaVaziaParaClienteSemLocacoes() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Locacao outroCliente = new Locacao("cliente-2", periodo, List.of(camera));
+        when(repository.listar()).thenReturn(List.of(outroCliente));
+        ConsultarLocacoesService service = new ConsultarLocacoesService(repository);
+
+        List<Locacao> resultado = service.consultarPorCliente("cliente-1");
+
+        assertThat(resultado).isNotNull().isEmpty();
+        assertThat(outroCliente.getClienteId()).isEqualTo("cliente-2");
+        assertThat(outroCliente.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        verify(repository).listar();
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#49: consultar somente as locações do cliente com períodos, estados e valores")
     void deveConsultarSomenteLocacoesDoClienteInformado() {
         LocacaoRepository repository = mock(LocacaoRepository.class);
