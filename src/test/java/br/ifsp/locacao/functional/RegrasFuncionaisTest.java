@@ -49,6 +49,11 @@ class RegrasFuncionaisTest {
         assertThat(l.getPeriodo().fim()).isEqualTo(inicio.plusDays(44));
         assertThatThrownBy(() -> l.renovar(1, inicio.plusDays(3))).isInstanceOf(IllegalStateException.class);
     }
+    @Test void naoPermiteUsarPeriodoEstendidoParaCriarNovaReserva() {
+        PeriodoLocacao estendido = new PeriodoLocacao(inicio, inicio.plusDays(30)).estender(7);
+        assertThatThrownBy(() -> new Locacao("cliente", estendido, List.of(item("1.00"))))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
     @Test void rejeitaRenovacaoNaDataFinal() {
         Locacao l = locacao(3);
         assertThatThrownBy(() -> l.renovar(1, inicio.plusDays(3))).isInstanceOf(IllegalArgumentException.class);
