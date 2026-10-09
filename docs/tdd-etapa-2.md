@@ -542,4 +542,16 @@ Filtro por estado e ordenação continuam pendentes dos próximos cenários. A l
 4. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência do construtor com Clock e de getCriadaEm(). Nenhum teste foi executado nessa tentativa.
 5. Teste registrado em commit separado, sem implementação de produção.
 
-Próximo passo: implementar data de criação e ordenação do cenário #52.
+## Cenário #52: implementação da ordenação por criação
+
+1. Adicionada data de criação imutável em Locacao, com Clock injetável para testes e relógio UTC como padrão do construtor existente.
+2. Executado o teste do cenário #52 antes de ordenar: 1 falha pela ordem incorreta dos resultados.
+3. Adicionada ordenação decrescente por criação após filtrar pelo cliente. A consulta por estado reutiliza essa ordem.
+4. Executado `./mvnw test`: 46 execuções passaram, sem falhas.
+5. Implementação registrada em commit separado, com referência de fechamento da issue #52.
+
+Os quatro cenários BDD de consulta da US07 (#49 a #52) estão cobertos. Os 45 cenários do backlog têm testes passando; há 46 execuções porque #11 tem duas entradas parametrizadas.
+
+A Etapa 2 ainda não está concluída: faltam testes funcionais adicionais, registro e correção de defeitos, revisão DDD, suítes JUnit, persistência SQLite, serviços Spring, API REST e verificação da entrega.
+
+Próximo passo: iniciar os testes funcionais pelos limites de renovação.

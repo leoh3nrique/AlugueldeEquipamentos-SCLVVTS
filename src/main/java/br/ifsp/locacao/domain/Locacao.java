@@ -5,12 +5,15 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.math.BigDecimal;
 
 public class Locacao {
     private final UUID id;
     private final String clienteId;
+    private final Instant criadaEm;
     private PeriodoLocacao periodo;
     private List<ItemLocacao> itens;
     private EstadoLocacao estado;
@@ -19,9 +22,14 @@ public class Locacao {
     private final Map<CodigoEquipamento, LocalDate> prazosDosDevolvidos = new HashMap<>();
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens) {
+        this(clienteId, periodo, itens, Clock.systemUTC());
+    }
+
+    public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock) {
         validarItens(itens);
         this.id = UUID.randomUUID();
         this.clienteId = clienteId;
+        this.criadaEm = clock.instant();
         this.periodo = periodo;
         this.itens = List.copyOf(itens);
         this.estado = EstadoLocacao.ABERTA;
@@ -162,6 +170,7 @@ public class Locacao {
     }
 
     public UUID getId() { return id; }
+    public Instant getCriadaEm() { return criadaEm; }
     public String getClienteId() { return clienteId; }
     public PeriodoLocacao getPeriodo() { return periodo; }
     public List<ItemLocacao> getItens() { return itens; }
