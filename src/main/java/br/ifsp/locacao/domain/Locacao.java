@@ -27,9 +27,13 @@ public class Locacao {
     }
 
     public Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock) {
+        this(clienteId, periodo, itens, clock, UUID.randomUUID());
+    }
+
+    private Locacao(String clienteId, PeriodoLocacao periodo, List<ItemLocacao> itens, Clock clock, UUID id) {
         if (clienteId == null || clienteId.isBlank() || periodo == null || clock == null) throw new IllegalArgumentException("Cliente, período e relógio são obrigatórios");
         validarItens(itens);
-        this.id = UUID.randomUUID();
+        this.id = id;
         this.clienteId = clienteId;
         this.criadaEm = clock.instant();
         this.periodo = periodo;
@@ -184,6 +188,28 @@ public class Locacao {
 
     public Dinheiro getValorTotal() {
         return new Dinheiro(getValorNormal().valor().add(getMulta().valor()));
+    }
+
+    public LocacaoDados dados() {
+        return new LocacaoDados(id, clienteId, criadaEm, periodo.inicio(), periodo.fim(), estado,
+                quantidadeRenovacoes, dataRetirada, itens.stream().map(i -> new LocacaoDados.ItemDados(
+                        i.codigo().valor(), i.descricao(), i.diaria().valor(), datasDevolucao.get(i.codigo()),
+                        getFimContratado(i.codigo()))).toList());
+    }
+
+    public static Locacao reconstituir(LocacaoDados dados) {
+        List<ItemLocacao> itens = dados.itens().stream().map(i -> new ItemLocacao(
+                new CodigoEquipamento(i.codigo()), i.descricao(), new Dinheiro(i.diaria()))).toList();
+        Locacao l = new Locacao(dados.clienteId(), PeriodoLocacao.reconstituir(dados.inicio(), dados.fim()),
+                itens, Clock.fixed(dados.criadaEm(), java.time.ZoneOffset.UTC), dados.id());
+        l.estado = dados.estado(); l.quantidadeRenovacoes = dados.renovacoes(); l.dataRetirada = dados.retirada();
+        for (LocacaoDados.ItemDados i : dados.itens()) {
+            if (i.devolucao() != null) {
+                CodigoEquipamento c = new CodigoEquipamento(i.codigo());
+                l.datasDevolucao.put(c, i.devolucao()); l.prazosDosDevolvidos.put(c, i.fimContratado());
+            }
+        }
+        return l;
     }
 
     public UUID getId() { return id; }
