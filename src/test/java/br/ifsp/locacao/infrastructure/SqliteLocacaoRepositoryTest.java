@@ -52,4 +52,13 @@ class SqliteLocacaoRepositoryTest {
         assertThat(r.estaReservado(new CodigoEquipamento("CAM01"), l.getPeriodo())).isFalse();
         assertThat(r.estaReservado(new CodigoEquipamento("PROJ01"), l.getPeriodo())).isTrue();
     }
+    @Test void recuperaReservaRenovadaAteQuarentaEQuatroDias() {
+        Locacao l = new Locacao("cliente", new PeriodoLocacao(LocalDate.of(2026,10,6), LocalDate.of(2026,11,5)), locacao().getItens());
+        l.confirmarRetirada(l.getPeriodo().inicio());
+        l.renovar(7,l.getPeriodo().inicio().plusDays(1)); l.renovar(7,l.getPeriodo().inicio().plusDays(2));
+        repo().salvar(l);
+        Locacao recuperada=repo().buscarPorId(l.getId()).orElseThrow();
+        assertThat(recuperada.getPeriodo()).isEqualTo(l.getPeriodo());
+        assertThat(recuperada.getQuantidadeRenovacoes()).isEqualTo(2);
+    }
 }
