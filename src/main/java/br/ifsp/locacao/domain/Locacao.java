@@ -44,6 +44,9 @@ public class Locacao {
     }
 
     public void cancelar() {
+        if (estado != EstadoLocacao.ABERTA) {
+            throw new IllegalStateException("Somente locações abertas podem ser canceladas");
+        }
         this.estado = EstadoLocacao.CANCELADA;
     }
 
