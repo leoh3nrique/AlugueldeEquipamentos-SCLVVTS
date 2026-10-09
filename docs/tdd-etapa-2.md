@@ -534,4 +534,12 @@ Filtro por estado e ordenação continuam pendentes dos próximos cenários. A l
 2. Executado `./mvnw test`: 45 execuções passaram, sem falhas.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #51.
 
-Próximo cenário: #52, ordenar as locações da mais recente para a mais antiga.
+## Cenário #52: ordenação por criação — fase de falha
+
+1. Adicionado teste com três locações do cliente criadas em instantes fixos e retornadas fora de ordem pelo repositório, além de uma locação mais recente de outro cliente.
+2. Adotada a data de criação como significado de mais recente; o período de aluguel é igual nos três casos para não confundir criação com início da reserva.
+3. O teste exige ordenação decrescente por criação, exclusão do outro cliente e ausência de salvamento. Clock.fixed evita pausas e dependência do relógio real.
+4. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência do construtor com Clock e de getCriadaEm(). Nenhum teste foi executado nessa tentativa.
+5. Teste registrado em commit separado, sem implementação de produção.
+
+Próximo passo: implementar data de criação e ordenação do cenário #52.

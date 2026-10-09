@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +18,37 @@ import static org.mockito.Mockito.*;
 @Tag("UnitTest")
 @Tag("TDD")
 class ConsultarLocacoesServiceTest {
+
+    @Test
+    @DisplayName("#52: ordenar locações do cliente da criação mais recente para a mais antiga")
+    void deveOrdenarLocacoesDaMaisRecenteParaAMaisAntiga() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Instant dataAntiga = Instant.parse("2026-10-01T10:00:00Z");
+        Instant dataIntermediaria = Instant.parse("2026-10-02T10:00:00Z");
+        Instant dataRecente = Instant.parse("2026-10-03T10:00:00Z");
+        Locacao antiga = new Locacao("cliente-1", periodo, List.of(camera),
+                Clock.fixed(dataAntiga, ZoneOffset.UTC));
+        Locacao intermediaria = new Locacao("cliente-1", periodo, List.of(camera),
+                Clock.fixed(dataIntermediaria, ZoneOffset.UTC));
+        Locacao recente = new Locacao("cliente-1", periodo, List.of(camera),
+                Clock.fixed(dataRecente, ZoneOffset.UTC));
+        Locacao outroCliente = new Locacao("cliente-2", periodo, List.of(camera),
+                Clock.fixed(dataRecente.plusSeconds(60), ZoneOffset.UTC));
+        when(repository.listar()).thenReturn(List.of(intermediaria, outroCliente, antiga, recente));
+        ConsultarLocacoesService service = new ConsultarLocacoesService(repository);
+
+        List<Locacao> resultado = service.consultarPorCliente("cliente-1");
+
+        assertThat(resultado).containsExactly(recente, intermediaria, antiga);
+        assertThat(resultado).extracting(Locacao::getCriadaEm)
+                .containsExactly(dataRecente, dataIntermediaria, dataAntiga);
+        verify(repository).listar();
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
 
     @Test
     @DisplayName("#51: filtrar locações do cliente pelo estado EM_ANDAMENTO")
