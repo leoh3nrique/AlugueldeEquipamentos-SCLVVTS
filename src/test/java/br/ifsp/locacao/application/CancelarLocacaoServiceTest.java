@@ -20,6 +20,35 @@ import static org.mockito.Mockito.*;
 class CancelarLocacaoServiceTest {
 
     @Test
+    @DisplayName("#46: rejeitar novo cancelamento de locação já cancelada")
+    void deveRejeitarSegundoCancelamento() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        PeriodoLocacao periodo = new PeriodoLocacao(
+                LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 9));
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        ItemLocacao camera = new ItemLocacao(codigo,
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        locacao.cancelar();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.CANCELADA);
+        UUID idOriginal = locacao.getId();
+        when(repository.buscarPorId(idOriginal)).thenReturn(Optional.of(locacao));
+        CancelarLocacaoService service = new CancelarLocacaoService(repository);
+
+        assertThatThrownBy(() -> service.cancelar(idOriginal))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Somente locações abertas podem ser canceladas");
+        assertThat(locacao.getId()).isEqualTo(idOriginal);
+        assertThat(locacao.getClienteId()).isEqualTo("cliente-1");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactly(camera);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.CANCELADA);
+        assertThat(locacao.bloqueiaReserva(codigo)).isFalse();
+        verify(repository).buscarPorId(idOriginal);
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#45: rejeitar cancelamento de locação em andamento")
     void deveRejeitarCancelamentoDeLocacaoEmAndamento() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

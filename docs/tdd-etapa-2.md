@@ -479,4 +479,12 @@ As rejeições de cancelamento por estado continuam pendentes dos próximos cen�
 2. Executado `./mvnw test`: 40 execuções passaram, sem falhas. A tentativa de cancelar uma locação em andamento mantém a reserva bloqueada e não salva alterações.
 3. Implementação registrada em commit separado, com referência de fechamento da issue #45.
 
-Próximo cenário: #46, rejeitar novo cancelamento de locação já cancelada.
+## Cenário #46: segundo cancelamento
+
+1. Adicionado teste que cancela uma locação aberta e tenta cancelá-la novamente pelo serviço.
+2. O teste exige rejeição, preservação de CANCELADA e dos dados originais, reserva liberada e ausência de salvamento.
+3. Executado `./mvnw test`: 41 execuções passaram, sem falhas.
+4. O teste passou na primeira execução: a validação de estado introduzida no cenário #45 já bloqueia novo cancelamento. Não houve fase de falha nem alteração de produção neste cenário.
+5. Teste registrado em commit próprio, com referência de fechamento da issue #46.
+
+Próximo cenário: #47, rejeitar cancelamento de locação parcialmente devolvida.
