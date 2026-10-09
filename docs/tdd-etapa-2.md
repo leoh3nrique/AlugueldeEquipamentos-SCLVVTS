@@ -457,4 +457,13 @@ Os nove cenários BDD de devolução da US05 (#34 a #42) estão cobertos. Testes
 3. Executado `./mvnw -Dtest=CancelarLocacaoServiceTest test`: falha na compilação pela ausência de CancelarLocacaoService e bloqueiaReserva(CodigoEquipamento). Nenhum teste foi executado nessa tentativa.
 4. Teste registrado em commit separado, sem implementação de produção. A liberação efetiva nas consultas SQLite deverá usar essa regra e será verificada ao implementar o repositório concreto.
 
-Próximo passo: implementar o serviço de cancelamento e a regra de bloqueio de reserva do cenário #44.
+## Cenário #44: implementação do cancelamento e liberação pelo domínio
+
+1. Adicionado CancelarLocacaoService para buscar a locação, cancelar pelo agregado e salvar o resultado.
+2. Adicionada consulta bloqueiaReserva(CodigoEquipamento), que deixa de bloquear equipamentos quando a locação está CANCELADA.
+3. Executado `./mvnw test`: 39 execuções passaram, sem falhas.
+4. Implementação registrada em commit separado, com referência de fechamento da issue #44.
+
+As rejeições de cancelamento por estado continuam pendentes dos próximos cenários. A liberação nas consultas do banco e os demais estados de bloqueio serão verificados ao implementar o repositório e os testes funcionais.
+
+Próximo cenário: #45, rejeitar cancelamento de locação em andamento.

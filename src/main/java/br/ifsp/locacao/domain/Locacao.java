@@ -47,6 +47,11 @@ public class Locacao {
         this.estado = EstadoLocacao.CANCELADA;
     }
 
+    public boolean bloqueiaReserva(CodigoEquipamento codigo) {
+        return estado != EstadoLocacao.CANCELADA
+                && itens.stream().anyMatch(item -> item.codigo().equals(codigo));
+    }
+
     public void confirmarRetirada(LocalDate dataRetirada) {
         if (estado != EstadoLocacao.ABERTA) {
             throw new IllegalStateException("Somente locações abertas podem ter a retirada confirmada");
