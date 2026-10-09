@@ -497,4 +497,11 @@ As rejeições de cancelamento por estado continuam pendentes dos próximos cen�
 
 Os quatro cenários BDD de cancelamento da US06 (#44 a #47) estão cobertos. A liberação efetiva de reservas no SQLite continua pendente do repositório concreto.
 
-Próximo cenário: #49, consultar somente as locações do cliente informado (US07).
+## Cenário #49: consulta por cliente — fase de falha
+
+1. Adicionado teste com duas locações do cliente-1 e uma do cliente-2, retornadas pelo repositório simulado.
+2. A consulta deve retornar apenas as duas locações do cliente-1, com períodos, estados e valores de 300.00 e 100.00 preservados, sem salvamento.
+3. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência de ConsultarLocacoesService e listar() no repositório. Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção.
+
+Próximo passo: implementar a consulta por cliente do cenário #49.
