@@ -17,6 +17,38 @@ import static org.mockito.Mockito.*;
 class ConsultarLocacoesServiceTest {
 
     @Test
+    @DisplayName("#51: filtrar locações do cliente pelo estado EM_ANDAMENTO")
+    void deveConsultarSomenteLocacoesEmAndamentoDoCliente() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        LocalDate inicio = LocalDate.of(2026, 10, 6);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
+                "Câmera", new Dinheiro(new BigDecimal("100.00")));
+        Locacao aberta = new Locacao("cliente-1", periodo, List.of(camera));
+        Locacao emAndamento = new Locacao("cliente-1", periodo, List.of(camera));
+        emAndamento.confirmarRetirada(inicio);
+        Locacao cancelada = new Locacao("cliente-1", periodo, List.of(camera));
+        cancelada.cancelar();
+        Locacao outroCliente = new Locacao("cliente-2", periodo, List.of(camera));
+        outroCliente.confirmarRetirada(inicio);
+        when(repository.listar()).thenReturn(List.of(aberta, outroCliente, emAndamento, cancelada));
+        ConsultarLocacoesService service = new ConsultarLocacoesService(repository);
+
+        List<Locacao> resultado = service.consultarPorCliente("cliente-1", EstadoLocacao.EM_ANDAMENTO);
+
+        assertThat(resultado).containsExactly(emAndamento);
+        assertThat(resultado).allSatisfy(locacao -> {
+            assertThat(locacao.getClienteId()).isEqualTo("cliente-1");
+            assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        });
+        assertThat(aberta.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        assertThat(cancelada.getEstado()).isEqualTo(EstadoLocacao.CANCELADA);
+        assertThat(outroCliente.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        verify(repository).listar();
+        verify(repository, never()).salvar(any(Locacao.class));
+    }
+
+    @Test
     @DisplayName("#50: retornar lista vazia para cliente sem locações")
     void deveRetornarListaVaziaParaClienteSemLocacoes() {
         LocacaoRepository repository = mock(LocacaoRepository.class);

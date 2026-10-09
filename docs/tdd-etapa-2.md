@@ -521,4 +521,11 @@ Filtro por estado e ordenação continuam pendentes dos próximos cenários. A l
 4. O teste passou na primeira execução: o filtro por cliente do cenário #49 já retorna lista vazia quando não encontra correspondências. Não houve fase de falha nem alteração de produção neste cenário.
 5. Teste registrado em commit próprio, com referência de fechamento da issue #50.
 
-Próximo cenário: #51, filtrar locações do cliente pelo estado EM_ANDAMENTO.
+## Cenário #51: consulta com filtro por estado — fase de falha
+
+1. Adicionado teste com locações ABERTA, EM_ANDAMENTO e CANCELADA do cliente informado, além de outra EM_ANDAMENTO de um cliente diferente.
+2. O filtro EM_ANDAMENTO deve retornar apenas a locação em andamento do cliente informado, sem modificar ou salvar os agregados.
+3. Executado `./mvnw -Dtest=ConsultarLocacoesServiceTest test`: falha na compilação pela ausência da consulta que recebe cliente e estado. Nenhum teste foi executado nessa tentativa.
+4. Teste registrado em commit separado, sem implementação de produção.
+
+Próximo passo: implementar o filtro por estado do cenário #51.
