@@ -466,4 +466,11 @@ Os nove cenários BDD de devolução da US05 (#34 a #42) estão cobertos. Testes
 
 As rejeições de cancelamento por estado continuam pendentes dos próximos cenários. A liberação nas consultas do banco e os demais estados de bloqueio serão verificados ao implementar o repositório e os testes funcionais.
 
-Próximo cenário: #45, rejeitar cancelamento de locação em andamento.
+## Cenário #45: cancelamento de locação em andamento — fase de falha
+
+1. Adicionado teste que confirma a retirada e tenta cancelar a locação EM_ANDAMENTO.
+2. O teste exige rejeição, preservação do estado e dados originais, equipamento ainda pendente e bloqueando reserva, sem salvamento.
+3. Executado `./mvnw test`: 40 execuções, 39 passaram e apenas o cenário #45 falhou porque nenhuma exceção foi lançada.
+4. Teste registrado em commit separado, sem modificar a implementação.
+
+Próximo passo: implementar a rejeição de cancelamento de locação em andamento no cenário #45.
