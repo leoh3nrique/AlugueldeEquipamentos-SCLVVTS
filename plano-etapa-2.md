@@ -70,7 +70,7 @@ Usar `@Tag("UnitTest")` e `@Tag("Functional")`. Criar issues com label `bug` ape
 - Fazer commits separados para testes, funcionalidades e refatorações, usando conventional commits.
 - Exemplos: `test: adiciona cenário de criação de locação`, `feat: implementa criação de locação`, `refactor: extrai validação de período`.
 - Ao resolver uma issue, incluir `- closes #<numero>` na mensagem do commit correspondente.
-- Distribuir histórias e revisões entre os três integrantes; o histórico deve evidenciar participação equilibrada com autoria real.
+- O plano inicial presumiu três integrantes com base no PDF. O responsável esclareceu posteriormente que o projeto é individual; manter o registro do trabalho real, sem atribuir contribuições a integrantes inexistentes.
 - Documentar como iniciar a API, configurar o SQLite e executar cada suíte.
 - Antes da entrega, conferir todos os 45 cenários, os testes funcionais adicionais e as três suítes.
 

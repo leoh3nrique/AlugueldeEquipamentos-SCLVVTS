@@ -2,7 +2,7 @@
 
 Estado auditado: commit `c2d9e0a`. Auditoria realizada em 8 de outubro de 2026, sem alterar o código ou o histórico.
 
-**Registro histórico:** este documento retrata aquele commit, não o estado final. Em 9 de outubro, os cenários restantes, testes funcionais, correções das issues #53 e #54, revisão de ItemLocacao, SQLite, suítes, serviços Spring e REST foram concluídos e verificados. Consulte entrega-etapa-2.md para o resultado atual. Os desvios históricos e a falta de evidência de participação equilibrada permanecem.
+**Registro histórico:** este documento retrata aquele commit, não o estado final. Em 9 de outubro, os cenários restantes, testes funcionais, correções das issues #53 e #54, revisão de ItemLocacao, SQLite, suítes, serviços Spring e REST foram concluídos e verificados. Consulte entrega-etapa-2.md para o resultado atual. Os desvios históricos permanecem. Posteriormente, o responsável esclareceu que o projeto é individual; a auditoria havia presumido uma equipe com base no PDF.
 
 ## Conclusão
 
@@ -58,7 +58,7 @@ Reutilizar uma regra já existente não requer inventar falha ou modificar produ
 | Commits separados | Pares de teste e implementação presentes; alguns commits incluem refatoração ou transições auxiliares junto da funcionalidade |
 | Serviços com @Service | Ausente |
 | Controladores REST | Ausentes |
-| Participação equilibrada de três integrantes | Não evidenciada: o intervalo da Etapa 2 contém 70 commits atribuídos a Leonardo Henrique e 1 a Leonardo Tiburcio; os nomes não comprovam pessoas distintas |
+| Composição do trabalho | Projeto individual, conforme esclarecimento posterior do responsável. A premissa de três integrantes foi extraída do PDF e não correspondia à composição real do projeto |
 
 ## Pontos de código a corrigir ou testar
 
@@ -81,6 +81,6 @@ Esses pontos decorrem da leitura do código, salvo o cancelamento em andamento, 
 3. Cobrir as lacunas por testes funcionais, registrar os defeitos encontrados e corrigir em commits próprios.
 4. Revisar o desenho de ItemLocacao com testes que protejam os comportamentos e commit explícito de refatoração.
 5. Implementar SQLite, suítes, serviços Spring e REST, com verificações correspondentes.
-6. Documentar quais casos passaram imediatamente e quais tiveram falha antes da implementação. Garantir participação real da equipe.
+6. Documentar quais casos passaram imediatamente e quais tiveram falha antes da implementação. Registrar a composição real do trabalho, que é individual.
 
 Refazer tudo não é justificado pelos resultados desta auditoria. As falhas reais de processo devem ser reconhecidas, e as pendências devem ser concluídas sem fabricar evidências históricas.

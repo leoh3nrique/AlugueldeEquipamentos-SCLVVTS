@@ -54,8 +54,8 @@ Locacao é a raiz e controla todas as operações. ItemLocacao é uma entidade i
 
 O SQLite guarda um documento JSON do agregado completo por identificador, usando JDBC e ObjectMapper. Essa opção mantém a unidade de persistência igual à unidade do domínio. Consultas de disponibilidade leem os agregados e aplicam a regra de estado, item e sobreposição; é adequado ao pequeno módulo acadêmico, sem pretensão de otimização para grande volume. Serviços Spring transacionais e pool de uma conexão serializam as operações desta instância.
 
-## Pendência acadêmica e histórico
+## Trabalho individual e histórico
 
-A implementação técnica não comprova participação equilibrada dos três integrantes. O histórico atual não evidencia esse requisito; a equipe precisa apresentar sua participação real. Não foram alteradas autorias, datas ou commits para simular contribuições.
+O responsável esclareceu que realiza o projeto individualmente. Portanto, não existem outros integrantes cuja participação precise ser documentada neste projeto. O PDF orienta grupos de três e participação equilibrada; não há registro nesta conversa sobre uma autorização ou alteração dessa orientação pelo professor. Não foram alteradas autorias, datas ou commits para simular contribuições.
 
 A antecipação inicial e as dependências entre cenários descritas na auditoria histórica continuam visíveis. As correções posteriores não transformam retrospectivamente o histórico em um processo perfeito de TDD. A avaliação acadêmica desse processo pertence ao professor.

@@ -98,7 +98,7 @@ Erros retornam JSON com `mensagem`: 400 para entradas inválidas ou equipamento 
 - [Auditoria histórica do processo](docs/auditoria-etapa-2.md)
 - [Plano inicial de execução](plano-etapa-2.md)
 
-Os registros preservam os casos que passaram de imediato e a antecipação inicial de validações. A participação equilibrada de três integrantes precisa ser demonstrada pelo trabalho real da equipe; o código não substitui esse requisito acadêmico.
+Os registros preservam os casos que passaram de imediato e a antecipação inicial de validações. Este projeto é realizado individualmente por Leonardo, conforme esclarecido pelo responsável. O PDF orienta grupos de três; essa orientação não descreve a composição deste projeto.
 
 ## Origem da base
 

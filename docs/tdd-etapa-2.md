@@ -560,4 +560,4 @@ Após os cenários do backlog, adicionados testes funcionais por partições e l
 
 ItemLocacao foi refatorado para entidade identificada pelo código. Foram implementados repositório SQLite/JDBC com testes em banco real, suítes TDD/Functional/UnitTest, serviços @Service transacionais e API REST. A verificação final teve 81 execuções passando: 46 do backlog, 31 funcionais e 4 de integração SQLite.
 
-A descrição detalhada dos critérios, comandos e limitações está em entrega-etapa-2.md. A participação equilibrada da equipe e a avaliação dos desvios históricos continuam requisitos acadêmicos que não podem ser satisfeitos por manipulação de commits.
+A descrição detalhada dos critérios, comandos e limitações está em entrega-etapa-2.md. O responsável esclareceu que o projeto é individual. A avaliação dos desvios históricos pertence ao professor; não foram manipuladas datas ou autorias dos commits.
