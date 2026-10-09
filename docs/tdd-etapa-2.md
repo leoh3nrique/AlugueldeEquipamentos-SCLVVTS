@@ -554,4 +554,10 @@ Os quatro cenários BDD de consulta da US07 (#49 a #52) estão cobertos. Os 45 c
 
 A Etapa 2 ainda não está concluída: faltam testes funcionais adicionais, registro e correção de defeitos, revisão DDD, suítes JUnit, persistência SQLite, serviços Spring, API REST e verificação da entrega.
 
-Próximo passo: iniciar os testes funcionais pelos limites de renovação.
+## Finalização técnica
+
+Após os cenários do backlog, adicionados testes funcionais por partições e limites. A primeira execução funcional apresentou nove falhas e um erro, registrados na issue #53 com label bug. Os testes foram commitados antes das correções. Uma segunda falha, de criação com período estendido, foi registrada na issue #54 e corrigida após o commit do teste.
+
+ItemLocacao foi refatorado para entidade identificada pelo código. Foram implementados repositório SQLite/JDBC com testes em banco real, suítes TDD/Functional/UnitTest, serviços @Service transacionais e API REST. A verificação final teve 81 execuções passando: 46 do backlog, 31 funcionais e 4 de integração SQLite.
+
+A descrição detalhada dos critérios, comandos e limitações está em entrega-etapa-2.md. A participação equilibrada da equipe e a avaliação dos desvios históricos continuam requisitos acadêmicos que não podem ser satisfeitos por manipulação de commits.
