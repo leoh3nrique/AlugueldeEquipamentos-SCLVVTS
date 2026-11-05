@@ -46,4 +46,14 @@ class ItemLocacaoStructuralTest {
 
         assertThat(primeiro.equals(segundo)).isFalse();
     }
+
+    @Test
+    @DisplayName("Considerar um item de locação diferente de um objeto de outro tipo")
+    void naoConsideraItemIgualAObjetoDeOutroTipo() {
+        ItemLocacao item = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Object outro = new Object();
+
+        assertThat(item.equals(outro)).isFalse();
+    }
 }
