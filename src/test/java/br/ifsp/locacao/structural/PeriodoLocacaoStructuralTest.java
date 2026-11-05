@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag("Structural")
@@ -21,5 +22,16 @@ class PeriodoLocacaoStructuralTest {
         assertThatThrownBy(() -> new PeriodoLocacao(inicio, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Datas são obrigatórias");
+    }
+
+    @Test
+    @DisplayName("Não considerar sobrepostos períodos quando o próximo começa no fim do anterior")
+    void naoConsideraSobrepostosPeriodosAdjacentes() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        LocalDate limite = inicio.plusDays(3);
+        PeriodoLocacao anterior = new PeriodoLocacao(inicio, limite);
+        PeriodoLocacao proximo = new PeriodoLocacao(limite, limite.plusDays(3));
+
+        assertThat(anterior.sobrepoe(proximo)).isFalse();
     }
 }
