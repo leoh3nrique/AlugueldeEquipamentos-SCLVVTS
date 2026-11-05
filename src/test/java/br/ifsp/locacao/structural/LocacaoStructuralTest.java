@@ -1,0 +1,30 @@
+package br.ifsp.locacao.structural;
+
+import br.ifsp.locacao.domain.CodigoEquipamento;
+import br.ifsp.locacao.domain.Dinheiro;
+import br.ifsp.locacao.domain.ItemLocacao;
+import br.ifsp.locacao.domain.Locacao;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@Tag("Structural")
+@Tag("UnitTest")
+class LocacaoStructuralTest {
+
+    @Test
+    @DisplayName("Rejeitar período nulo na criação mesmo com cliente e equipamento válidos")
+    void rejeitaPeriodoNuloNaCriacaoComClienteEEquipamentoValidos() {
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+
+        assertThatThrownBy(() -> new Locacao("cliente-1", null, List.of(camera)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Período é obrigatório");
+    }
+}
