@@ -1,5 +1,6 @@
 package br.ifsp.locacao.structural;
 
+import br.ifsp.locacao.domain.CodigoEquipamento;
 import br.ifsp.locacao.domain.Dinheiro;
 import br.ifsp.locacao.domain.ItemLocacao;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,17 @@ class ItemLocacaoStructuralTest {
         Dinheiro diaria = new Dinheiro(new BigDecimal("100.00"));
 
         assertThatThrownBy(() -> new ItemLocacao(null, "Câmera", diaria))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Código e descrição são obrigatórios");
+    }
+
+    @Test
+    @DisplayName("Rejeitar descrição nula mesmo com código e diária válidos")
+    void rejeitaDescricaoNulaComCodigoEDiariaValidos() {
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        Dinheiro diaria = new Dinheiro(new BigDecimal("100.00"));
+
+        assertThatThrownBy(() -> new ItemLocacao(codigo, null, diaria))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Código e descrição são obrigatórios");
     }
