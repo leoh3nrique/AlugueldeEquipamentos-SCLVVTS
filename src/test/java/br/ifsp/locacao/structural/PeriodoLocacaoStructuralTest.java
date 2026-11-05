@@ -44,4 +44,14 @@ class PeriodoLocacaoStructuralTest {
 
         assertThat(primeiro.sobrepoe(segundo)).isTrue();
     }
+
+    @Test
+    @DisplayName("Não considerar sobreposto um período que termina no início do período consultado")
+    void naoConsideraSobrepostoPeriodoQueTerminaNoInicioDoAtual() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao atual = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        PeriodoLocacao anterior = new PeriodoLocacao(inicio.minusDays(3), inicio);
+
+        assertThat(atual.sobrepoe(anterior)).isFalse();
+    }
 }
