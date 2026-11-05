@@ -25,4 +25,16 @@ class ConsultarLocacoesServiceStructuralTest {
                 .hasMessage("Cliente é obrigatório");
         verifyNoInteractions(repository);
     }
+
+    @Test
+    @DisplayName("Rejeitar cliente em branco antes de consultar o repositório")
+    void rejeitaClienteEmBrancoSemConsultarRepositorio() {
+        LocacaoRepository repository = mock(LocacaoRepository.class);
+        ConsultarLocacoesService service = new ConsultarLocacoesService(repository);
+
+        assertThatThrownBy(() -> service.consultarPorCliente("   "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Cliente é obrigatório");
+        verifyNoInteractions(repository);
+    }
 }
