@@ -34,4 +34,14 @@ class PeriodoLocacaoStructuralTest {
 
         assertThat(anterior.sobrepoe(proximo)).isFalse();
     }
+
+    @Test
+    @DisplayName("Considerar sobrepostos períodos que compartilham um dia")
+    void consideraSobrepostosPeriodosComUmDiaEmComum() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao primeiro = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        PeriodoLocacao segundo = new PeriodoLocacao(inicio.plusDays(2), inicio.plusDays(5));
+
+        assertThat(primeiro.sobrepoe(segundo)).isTrue();
+    }
 }
