@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag("Structural")
@@ -34,5 +35,15 @@ class ItemLocacaoStructuralTest {
         assertThatThrownBy(() -> new ItemLocacao(codigo, null, diaria))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Código e descrição são obrigatórios");
+    }
+
+    @Test
+    @DisplayName("Considerar diferentes itens com códigos distintos mesmo com descrição e diária iguais")
+    void naoConsideraIguaisItensComCodigosDiferentes() {
+        Dinheiro diaria = new Dinheiro(new BigDecimal("100.00"));
+        ItemLocacao primeiro = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera", diaria);
+        ItemLocacao segundo = new ItemLocacao(new CodigoEquipamento("CAM02"), "Câmera", diaria);
+
+        assertThat(primeiro.equals(segundo)).isFalse();
     }
 }
