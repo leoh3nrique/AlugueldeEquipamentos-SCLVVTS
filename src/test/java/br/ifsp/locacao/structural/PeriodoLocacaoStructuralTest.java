@@ -54,4 +54,14 @@ class PeriodoLocacaoStructuralTest {
 
         assertThat(atual.sobrepoe(anterior)).isFalse();
     }
+
+    @Test
+    @DisplayName("Considerar diferentes períodos com o mesmo início e fins distintos")
+    void naoConsideraIguaisPeriodosComMesmoInicioEFinsDiferentes() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao primeiro = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        PeriodoLocacao segundo = new PeriodoLocacao(inicio, inicio.plusDays(4));
+
+        assertThat(primeiro.equals(segundo)).isFalse();
+    }
 }
