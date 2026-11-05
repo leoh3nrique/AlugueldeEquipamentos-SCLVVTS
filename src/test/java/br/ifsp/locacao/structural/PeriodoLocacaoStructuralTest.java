@@ -75,4 +75,14 @@ class PeriodoLocacaoStructuralTest {
 
         assertThat(primeiro.equals(segundo)).isFalse();
     }
+
+    @Test
+    @DisplayName("Considerar um período diferente de um objeto de outro tipo")
+    void naoConsideraPeriodoIgualAObjetoDeOutroTipo() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        Object outro = new Object();
+
+        assertThat(periodo.equals(outro)).isFalse();
+    }
 }
