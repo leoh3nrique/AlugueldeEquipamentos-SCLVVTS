@@ -115,4 +115,18 @@ class ApiExceptionHandlerMutationTest {
                 """));
         verifyNoInteractions(devolver);
     }
+
+    @Test
+    @DisplayName("GET com ID inválido retorna status 400 e mensagem em JSON")
+    void buscaComIdInvalidoRetornaMensagemDeErro() throws Exception {
+        String resposta = mvc.perform(get("/api/locacoes/id-invalido"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
+                {"mensagem": "Requisição inválida: confira datas, identificadores e campos obrigatórios"}
+                """));
+        verifyNoInteractions(consultar);
+    }
 }
