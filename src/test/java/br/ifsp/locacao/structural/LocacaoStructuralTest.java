@@ -55,4 +55,15 @@ class LocacaoStructuralTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cliente, período e relógio são obrigatórios");
     }
+
+    @Test
+    @DisplayName("Rejeitar lista de itens nula na criação mesmo com cliente e período válidos")
+    void rejeitaListaDeItensNulaNaCriacaoComClienteEPeriodoValidos() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+
+        assertThatThrownBy(() -> new Locacao("cliente-1", periodo, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Itens são obrigatórios");
+    }
 }
