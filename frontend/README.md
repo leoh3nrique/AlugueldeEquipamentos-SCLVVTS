@@ -22,9 +22,12 @@ A aplicação abre em `http://localhost:5173`. As chamadas usam caminhos relativ
 
 ```bash
 npm run build
+npm run preview
 ```
 
-Os arquivos ficam em `dist/`. O endereço de publicação e o encaminhamento de `/api` ainda serão definidos.
+Os arquivos ficam em `dist/`. O `preview` serve esse build em `http://localhost:4173`, com o mesmo encaminhamento de `/api`.
+
+O endereço de publicação ainda será definido. O servidor que publicar `dist/` precisa encaminhar `/api` para o back-end e devolver `index.html` nas rotas da aplicação, como `/locacoes`.
 
 ## Configuração
 
@@ -36,9 +39,11 @@ Para mudar o valor, crie `frontend/.env.local` com `VITE_CLIENTE_ID=outro-client
 
 ## Autenticação
 
-Login e cadastro estão desenhados, mas não conectados, porque o back-end ainda não tem autenticação:
+Login e cadastro ainda não estão conectados, porque o back-end não tem rotas de autenticação:
 
 - O login só confere se os campos foram preenchidos e entra com o cliente de `VITE_CLIENTE_ID`.
-- O cadastro valida o formulário e não cria conta.
+- O cadastro valida o formulário e informa que nenhuma conta foi criada.
 
-Na integração, o `clienteId` passará a ser o ID do usuário autenticado. Essa troca fica em `src/sessao.js`.
+Na integração, troque o corpo de `entrar` e `cadastrar` em `src/sessao.js` pelas chamadas reais. `entrar` deve guardar o ID devolvido pelo back-end, que passa a ser o `clienteId`. As telas já tratam carregamento, envio repetido e erros da API.
+
+Nas chamadas de locação, 401 encerra a sessão e leva ao login, e 403 informa a falta de permissão.
