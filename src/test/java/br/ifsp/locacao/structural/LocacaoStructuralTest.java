@@ -117,4 +117,24 @@ class LocacaoStructuralTest {
         assertThat(locacao.getQuantidadeRenovacoes()).isZero();
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
     }
+
+    @Test
+    @DisplayName("Rejeitar renovação anterior à retirada sem alterar prazo, contador ou estado")
+    void rejeitaRenovacaoAnteriorARetiradaSemAlterarLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        LocalDate retirada = inicio.plusDays(1);
+        locacao.confirmarRetirada(retirada);
+
+        assertThatThrownBy(() -> locacao.renovar(1, inicio))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Solicitação não pode anteceder a retirada");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.dados().retirada()).isEqualTo(retirada);
+    }
 }
