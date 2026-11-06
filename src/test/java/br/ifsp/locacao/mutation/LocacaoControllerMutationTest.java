@@ -16,15 +16,18 @@ import br.ifsp.locacao.domain.PeriodoLocacao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,41 +35,95 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("Mutation")
 @Tag("UnitTest")
 class LocacaoControllerMutationTest {
 
-    @Test
-    @DisplayName("GET por ID retorna a reserva completa com status 200")
-    void buscaPorIdRetornaJsonDaReserva() throws Exception {
-        ConsultarLocacoesService consultar = mock(ConsultarLocacoesService.class);
+    private CriarLocacaoService criar;
+    private ConsultarLocacoesService consultar;
+    private ObjectMapper mapper;
+    private MockMvc mvc;
+    private Locacao reserva;
+
+    @BeforeEach
+    void preparaApi() {
+        criar = mock(CriarLocacaoService.class);
+        consultar = mock(ConsultarLocacoesService.class);
         LocacaoController controller = new LocacaoController(
-                mock(CriarLocacaoService.class), mock(AlterarLocacaoService.class),
+                criar, mock(AlterarLocacaoService.class),
                 mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
                 mock(RegistrarDevolucaoService.class), mock(CancelarLocacaoService.class), consultar);
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
+        mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        MockMvc mvc = MockMvcBuilders.standaloneSetup(controller)
+        mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper)).build();
         ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"),
                 "Câmera", new Dinheiro(new BigDecimal("100.00")));
-        Locacao reserva = new Locacao("cliente-1", new PeriodoLocacao(
+        reserva = new Locacao("cliente-1", new PeriodoLocacao(
                 LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 13)), List.of(camera),
                 Clock.fixed(Instant.parse("2026-11-06T12:00:00Z"), ZoneOffset.UTC));
+    }
+
+    @Test
+    @DisplayName("GET por ID retorna a reserva completa com status 200")
+    void buscaPorIdRetornaJsonDaReserva() throws Exception {
         when(consultar.buscarPorId(reserva.getId())).thenReturn(reserva);
 
         String resposta = mvc.perform(get("/api/locacoes/{id}", reserva.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
+        confereJsonDaReserva(resposta);
+        verify(consultar).buscarPorId(reserva.getId());
+    }
+
+    @Test
+    @DisplayName("POST cria reserva e retorna status 201, Location e dados completos")
+    void criaReservaRetornaJsonELocalizacao() throws Exception {
+        when(criar.criar(eq("cliente-1"), eq(reserva.getPeriodo()), anyList())).thenReturn(reserva);
+
+        String resposta = mvc.perform(post("/api/locacoes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clienteId": "cliente-1",
+                                  "inicio": "2026-11-10",
+                                  "fim": "2026-11-13",
+                                  "itens": [{
+                                    "codigo": "CAM01",
+                                    "descricao": "Câmera",
+                                    "diaria": 100.00
+                                  }]
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/api/locacoes/" + reserva.getId()))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        confereJsonDaReserva(resposta);
+        ArgumentCaptor<List<ItemLocacao>> itens = ArgumentCaptor.captor();
+        verify(criar).criar(eq("cliente-1"), eq(reserva.getPeriodo()), itens.capture());
+        assertThat(itens.getValue()).singleElement().satisfies(item -> {
+            assertThat(item.codigo().valor()).isEqualTo("CAM01");
+            assertThat(item.descricao()).isEqualTo("Câmera");
+            assertThat(item.diaria().valor()).isEqualByComparingTo("100.00");
+        });
+    }
+
+    private void confereJsonDaReserva(String resposta) throws Exception {
         assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
                 {
                   "id": "%s",
@@ -89,6 +146,5 @@ class LocacaoControllerMutationTest {
                   }]
                 }
                 """.formatted(reserva.getId())));
-        verify(consultar).buscarPorId(reserva.getId());
     }
 }
