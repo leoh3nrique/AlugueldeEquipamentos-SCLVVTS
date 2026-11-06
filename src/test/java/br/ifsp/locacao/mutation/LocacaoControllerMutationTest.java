@@ -10,6 +10,7 @@ import br.ifsp.locacao.application.RegistrarDevolucaoService;
 import br.ifsp.locacao.application.RenovarLocacaoService;
 import br.ifsp.locacao.domain.CodigoEquipamento;
 import br.ifsp.locacao.domain.Dinheiro;
+import br.ifsp.locacao.domain.EstadoLocacao;
 import br.ifsp.locacao.domain.ItemLocacao;
 import br.ifsp.locacao.domain.Locacao;
 import br.ifsp.locacao.domain.PeriodoLocacao;
@@ -149,6 +150,27 @@ class LocacaoControllerMutationTest {
         JsonNode esperado = mapper.createArrayNode().add(jsonDaReservaEsperado());
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(consultar).consultarPorCliente("cliente-1");
+    }
+
+    @Test
+    @DisplayName("GET por cliente e estado retorna os dados das locações em andamento")
+    void listaLocacoesDoClienteComFiltroDeEstado() throws Exception {
+        reserva.confirmarRetirada(LocalDate.of(2026, 11, 10));
+        when(consultar.consultarPorCliente("cliente-1", EstadoLocacao.EM_ANDAMENTO))
+                .thenReturn(List.of(reserva));
+
+        String resposta = mvc.perform(get("/api/locacoes")
+                        .param("clienteId", "cliente-1")
+                        .param("estado", "EM_ANDAMENTO"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode locacaoEsperada = (ObjectNode) jsonDaReservaEsperado();
+        locacaoEsperada.put("estado", "EM_ANDAMENTO");
+        JsonNode esperado = mapper.createArrayNode().add(locacaoEsperada);
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(consultar).consultarPorCliente("cliente-1", EstadoLocacao.EM_ANDAMENTO);
     }
 
     @Test
