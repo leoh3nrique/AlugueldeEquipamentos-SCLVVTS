@@ -1,6 +1,6 @@
 # Módulo de Aluguel de Equipamentos
 
-Projeto acadêmico da disciplina de Verificação, Validação e Teste de Software.
+Projeto acadêmico da disciplina de Verificação, Validação e Teste de Software, realizado individualmente por Leonardo.
 
 ## Agregado proposto
 
@@ -38,6 +38,8 @@ As três suítes podem ser executadas separadamente:
 
 As suítes executam, respectivamente, 46, 31 e 105 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
 
+Os caminhos não alcançáveis estão justificados em [Structural.md](Structural.md).
+
 ## Testes de mutação
 
 Para rodar o PIT em todas as classes de produção:
@@ -48,6 +50,7 @@ Para rodar o PIT em todas as classes de produção:
 
 A análise usa as classes com nome terminado em `Test`, incluindo os testes SQLite. As suítes ficam fora da seleção para não repetir os mesmos testes.
 Os relatórios HTML e XML são gerados em `target/pit-reports/`.
+Os mutantes equivalentes estão justificados em [Mutation.md](Mutation.md).
 
 ## API REST
 
@@ -100,16 +103,6 @@ Erros retornam JSON com `mensagem`: 400 para entradas inválidas ou equipamento 
 - Consultas são ordenadas pela data de criação, da mais recente para a mais antiga.
 - Cada equipamento possui identidade pelo código dentro da locação. Os itens são imutáveis; devoluções e prazos são controlados exclusivamente pela raiz do agregado.
 - Os serviços usam transações JDBC e uma conexão no pool SQLite para serializar as operações desta instância da aplicação.
-
-## Documentação da entrega
-
-- [Especificação da Etapa 1](proposta-etapa-1.md)
-- [Registro do processo e dos cenários](docs/tdd-etapa-2.md)
-- [Critérios funcionais e validação final](docs/entrega-etapa-2.md)
-- [Auditoria histórica do processo](docs/auditoria-etapa-2.md)
-- [Plano inicial de execução](plano-etapa-2.md)
-
-Os registros preservam os casos que passaram de imediato e a antecipação inicial de validações. Este projeto é realizado individualmente por Leonardo, conforme esclarecido pelo responsável. O PDF orienta grupos de três; essa orientação não descreve a composição deste projeto.
 
 ## Origem da base
 
