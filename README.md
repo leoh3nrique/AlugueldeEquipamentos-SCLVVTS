@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 81 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais e 4 testes de integração com SQLite real.
+O build executa 109 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais e 4 testes de integração com SQLite real.
 
 As três suítes podem ser executadas separadamente:
 
@@ -36,7 +36,18 @@ As três suítes podem ser executadas separadamente:
 ./mvnw -Dtest=UnitTestSuite test
 ```
 
-As suítes executam, respectivamente, 46, 31 e 77 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+As suítes executam, respectivamente, 46, 31 e 105 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+
+## Testes de mutação
+
+Para rodar o PIT em todas as classes de produção:
+
+```bash
+./mvnw test-compile org.pitest:pitest-maven:mutationCoverage
+```
+
+A análise usa as classes com nome terminado em `Test`, incluindo os testes SQLite. As suítes ficam fora da seleção para não repetir os mesmos testes.
+Os relatórios HTML e XML são gerados em `target/pit-reports/`.
 
 ## API REST
 
