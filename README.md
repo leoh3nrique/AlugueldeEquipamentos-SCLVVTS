@@ -54,6 +54,8 @@ Os mutantes equivalentes estão justificados em [Mutation.md](Mutation.md).
 
 ## API REST
 
+Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` para consultar e testar os endpoints. A especificação OpenAPI em JSON fica em `http://localhost:8080/v3/api-docs`.
+
 | Método | Caminho | Operação |
 |---|---|---|
 | POST | `/api/locacoes` | Criar reserva (201 e cabeçalho Location) |

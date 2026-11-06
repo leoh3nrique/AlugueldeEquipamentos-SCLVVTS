@@ -2,6 +2,7 @@ package br.ifsp.locacao.api;
 
 import br.ifsp.locacao.application.*;
 import br.ifsp.locacao.domain.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.math.BigDecimal;
@@ -47,6 +48,7 @@ public class LocacaoController {
                     l.dados().itens().stream().map(i -> new ItemSaida(i.codigo(), i.descricao(), i.diaria(), i.devolucao()!=null, i.devolucao(), i.fimContratado())).toList());
         }
     }
+    @ApiResponse(responseCode = "201", description = "Reserva criada")
     @PostMapping public ResponseEntity<LocacaoSaida> criar(@RequestBody ReservaEntrada entrada) {
         Locacao l=criar.criar(entrada.clienteId(), entrada.periodo(), entrada.itensDominio());
         return ResponseEntity.created(URI.create("/api/locacoes/"+l.getId())).body(LocacaoSaida.de(l));
