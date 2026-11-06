@@ -13,6 +13,7 @@ import br.ifsp.locacao.domain.Dinheiro;
 import br.ifsp.locacao.domain.ItemLocacao;
 import br.ifsp.locacao.domain.Locacao;
 import br.ifsp.locacao.domain.PeriodoLocacao;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -85,7 +86,7 @@ class LocacaoControllerMutationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        confereJsonDaReserva(resposta);
+        assertThat(mapper.readTree(resposta)).isEqualTo(jsonDaReservaEsperado());
         verify(consultar).buscarPorId(reserva.getId());
     }
 
@@ -113,7 +114,7 @@ class LocacaoControllerMutationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        confereJsonDaReserva(resposta);
+        assertThat(mapper.readTree(resposta)).isEqualTo(jsonDaReservaEsperado());
         ArgumentCaptor<List<ItemLocacao>> itens = ArgumentCaptor.captor();
         verify(criar).criar(eq("cliente-1"), eq(reserva.getPeriodo()), itens.capture());
         assertThat(itens.getValue()).singleElement().satisfies(item -> {
@@ -123,8 +124,23 @@ class LocacaoControllerMutationTest {
         });
     }
 
-    private void confereJsonDaReserva(String resposta) throws Exception {
-        assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
+    @Test
+    @DisplayName("GET por cliente retorna a lista completa sem filtro de estado")
+    void listaLocacoesDoClienteSemFiltroDeEstado() throws Exception {
+        when(consultar.consultarPorCliente("cliente-1")).thenReturn(List.of(reserva));
+
+        String resposta = mvc.perform(get("/api/locacoes").param("clienteId", "cliente-1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        JsonNode esperado = mapper.createArrayNode().add(jsonDaReservaEsperado());
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(consultar).consultarPorCliente("cliente-1");
+    }
+
+    private JsonNode jsonDaReservaEsperado() throws Exception {
+        return mapper.readTree("""
                 {
                   "id": "%s",
                   "clienteId": "cliente-1",
@@ -145,6 +161,6 @@ class LocacaoControllerMutationTest {
                     "fimContratado": "2026-11-13"
                   }]
                 }
-                """.formatted(reserva.getId())));
+                """.formatted(reserva.getId()));
     }
 }
