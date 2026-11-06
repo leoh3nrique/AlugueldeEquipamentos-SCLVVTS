@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
@@ -128,5 +129,23 @@ class ApiExceptionHandlerMutationTest {
                 {"mensagem": "Requisição inválida: confira datas, identificadores e campos obrigatórios"}
                 """));
         verifyNoInteractions(consultar);
+    }
+
+    @Test
+    @DisplayName("GET com falha no banco retorna status 503 e mensagem em JSON")
+    void bancoIndisponivelRetornaMensagemDeErro() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(consultar.buscarPorId(id)).thenThrow(
+                new DataAccessResourceFailureException("Falha ao abrir conexão SQLite"));
+
+        String resposta = mvc.perform(get("/api/locacoes/{id}", id))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
+                {"mensagem": "Banco indisponível; tente novamente"}
+                """));
+        verify(consultar).buscarPorId(id);
     }
 }
