@@ -16,6 +16,7 @@ import br.ifsp.locacao.domain.PeriodoLocacao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +54,7 @@ class LocacaoControllerMutationTest {
 
     private CriarLocacaoService criar;
     private ConsultarLocacoesService consultar;
+    private CancelarLocacaoService cancelar;
     private ObjectMapper mapper;
     private MockMvc mvc;
     private Locacao reserva;
@@ -61,10 +63,11 @@ class LocacaoControllerMutationTest {
     void preparaApi() {
         criar = mock(CriarLocacaoService.class);
         consultar = mock(ConsultarLocacoesService.class);
+        cancelar = mock(CancelarLocacaoService.class);
         LocacaoController controller = new LocacaoController(
                 criar, mock(AlterarLocacaoService.class),
                 mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
-                mock(RegistrarDevolucaoService.class), mock(CancelarLocacaoService.class), consultar);
+                mock(RegistrarDevolucaoService.class), cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mvc = MockMvcBuilders.standaloneSetup(controller)
@@ -137,6 +140,23 @@ class LocacaoControllerMutationTest {
         JsonNode esperado = mapper.createArrayNode().add(jsonDaReservaEsperado());
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(consultar).consultarPorCliente("cliente-1");
+    }
+
+    @Test
+    @DisplayName("POST de cancelamento retorna os dados da reserva cancelada com status 200")
+    void cancelaReservaRetornaJsonComEstadoCancelada() throws Exception {
+        reserva.cancelar();
+        when(cancelar.cancelar(reserva.getId())).thenReturn(reserva);
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/cancelamento", reserva.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado();
+        esperado.put("estado", "CANCELADA");
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(cancelar).cancelar(reserva.getId());
     }
 
     private JsonNode jsonDaReservaEsperado() throws Exception {
