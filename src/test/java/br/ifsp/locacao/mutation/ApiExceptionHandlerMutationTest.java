@@ -28,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,6 +41,7 @@ class ApiExceptionHandlerMutationTest {
 
     private ConsultarLocacoesService consultar;
     private CancelarLocacaoService cancelar;
+    private RegistrarDevolucaoService devolver;
     private ObjectMapper mapper;
     private MockMvc mvc;
 
@@ -47,10 +49,11 @@ class ApiExceptionHandlerMutationTest {
     void preparaApi() {
         consultar = mock(ConsultarLocacoesService.class);
         cancelar = mock(CancelarLocacaoService.class);
+        devolver = mock(RegistrarDevolucaoService.class);
         LocacaoController controller = new LocacaoController(
                 mock(CriarLocacaoService.class), mock(AlterarLocacaoService.class),
                 mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
-                mock(RegistrarDevolucaoService.class), cancelar, consultar);
+                devolver, cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mvc = MockMvcBuilders.standaloneSetup(controller)
@@ -91,5 +94,25 @@ class ApiExceptionHandlerMutationTest {
                 {"mensagem": "Somente locações abertas podem ser canceladas"}
                 """));
         verify(cancelar).cancelar(id);
+    }
+
+    @Test
+    @DisplayName("POST de devolução sem códigos retorna status 400 e mensagem em JSON")
+    void devolucaoSemCodigosRetornaMensagemDeErro() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/devolucoes", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"data": "2026-11-15"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
+                {"mensagem": "Códigos são obrigatórios"}
+                """));
+        verifyNoInteractions(devolver);
     }
 }
