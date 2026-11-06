@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { buscarLocacao } from '../api.js';
 import AcoesLocacao from '../componentes/AcoesLocacao.jsx';
 import { IconeConfirmar, IconeFechar, IconeVoltar } from '../componentes/Icones.jsx';
@@ -61,10 +61,15 @@ function Carregando() {
 
 export default function Detalhes() {
   const { id } = useParams();
-  const { state } = useLocation();
+  const { state, pathname } = useLocation();
+  const navegar = useNavigate();
   const [carga, definirCarga] = useState({ situacao: 'carregando' });
   const [aviso, definirAviso] = useState(state?.aviso || '');
   const [tentativa, definirTentativa] = useState(0);
+
+  useEffect(() => {
+    if (state?.aviso) navegar(pathname, { replace: true, state: null });
+  }, [state, pathname, navegar]);
 
   const recarregar = useCallback(() => buscarLocacao(id).then((locacao) => definirCarga({ situacao: 'ok', locacao })), [id]);
 
