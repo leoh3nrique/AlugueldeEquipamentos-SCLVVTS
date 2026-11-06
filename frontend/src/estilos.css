@@ -158,3 +158,5 @@ body { margin: 0; }
 .cartao-titulo-tabela { padding-bottom: 4px; }
 .alinhar-inicio { align-self: flex-start; }
 .atraso { color: var(--perigo); font-weight: 500; }
+.sem-borda { border: 0; margin: 0; padding: 0; }
+.sem-borda legend { padding: 0; margin-bottom: 6px; }
