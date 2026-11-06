@@ -5,15 +5,18 @@ import br.ifsp.locacao.domain.Dinheiro;
 import br.ifsp.locacao.domain.EstadoLocacao;
 import br.ifsp.locacao.domain.ItemLocacao;
 import br.ifsp.locacao.domain.Locacao;
+import br.ifsp.locacao.domain.LocacaoDados;
 import br.ifsp.locacao.domain.PeriodoLocacao;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -245,5 +248,35 @@ class LocacaoStructuralTest {
         assertThat(locacao.bloqueiaReserva(camera.codigo())).isTrue();
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
         assertThat(locacao.getItens()).containsExactly(camera);
+    }
+
+    @Test
+    @DisplayName("Reconstituir locação parcialmente devolvida preservando dados, prazos e valores")
+    void reconstituiLocacaoParcialmenteDevolvidaComItemPendente() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        LocalDate fimOriginal = inicio.plusDays(3);
+        LocalDate fimRenovado = inicio.plusDays(10);
+        CodigoEquipamento camera = new CodigoEquipamento("CAM01");
+        CodigoEquipamento projetor = new CodigoEquipamento("PROJ01");
+        LocacaoDados dados = new LocacaoDados(
+                UUID.fromString("a9b4f95d-16a0-4a48-84e7-fb01e03a9a2c"), "cliente-1",
+                Instant.parse("2026-11-04T10:00:00Z"), inicio, fimRenovado,
+                EstadoLocacao.PARCIALMENTE_DEVOLVIDA, 1, inicio,
+                List.of(
+                        new LocacaoDados.ItemDados(camera.valor(), "Câmera", new BigDecimal("100.00"),
+                                inicio.plusDays(1), fimOriginal),
+                        new LocacaoDados.ItemDados(projetor.valor(), "Projetor", new BigDecimal("50.00"),
+                                null, fimRenovado)));
+
+        Locacao recuperada = Locacao.reconstituir(dados);
+
+        assertThat(recuperada.dados()).isEqualTo(dados);
+        assertThat(recuperada.estaDevolvido(camera)).isTrue();
+        assertThat(recuperada.estaDevolvido(projetor)).isFalse();
+        assertThat(recuperada.getFimContratado(camera)).isEqualTo(fimOriginal);
+        assertThat(recuperada.getFimContratado(projetor)).isEqualTo(fimRenovado);
+        assertThat(recuperada.getValorNormal().valor()).isEqualByComparingTo("800.00");
+        assertThat(recuperada.getMulta().valor()).isEqualByComparingTo("0.00");
+        assertThat(recuperada.getValorTotal().valor()).isEqualByComparingTo("800.00");
     }
 }
