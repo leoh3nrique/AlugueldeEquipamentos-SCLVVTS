@@ -5,7 +5,7 @@ Interface em React e Vite para a API de locações do projeto.
 ## Requisitos
 
 - Node.js 20.19 ou superior
-- API em execução em `http://localhost:8080` (veja o README da raiz)
+- API em execução em `http://localhost:8080`, com as rotas de `/api/auth` (veja o README da raiz)
 
 ## Executar
 
@@ -29,21 +29,13 @@ Os arquivos ficam em `dist/`. O `preview` serve esse build em `http://localhost:
 
 O endereço de publicação ainda será definido. O servidor que publicar `dist/` precisa encaminhar `/api` para o back-end e devolver `index.html` nas rotas da aplicação, como `/locacoes`.
 
-## Configuração
-
-| Variável | Padrão | Uso |
-|---|---|---|
-| `VITE_CLIENTE_ID` | `cliente-1` | Cliente usado enquanto não há autenticação |
-
-Para mudar o valor, crie `frontend/.env.local` com `VITE_CLIENTE_ID=outro-cliente`.
-
 ## Autenticação
 
-Login e cadastro ainda não estão conectados, porque o back-end não tem rotas de autenticação:
+A sessão usa o cookie `JSESSIONID`, definido pelo back-end como `HttpOnly`. Ao carregar, a aplicação consulta `/api/auth/sessao` para recuperar o usuário, e o `id` dele é o `clienteId` das locações. Essa integração fica em `src/sessao.js`.
 
-- O login só confere se os campos foram preenchidos e entra com o cliente de `VITE_CLIENTE_ID`.
-- O cadastro valida o formulário e informa que nenhuma conta foi criada.
+Todo POST e PUT envia o token de `/api/auth/csrf`, que é buscado de novo após login e logout (`src/api.js`).
 
-Na integração, troque o corpo de `entrar` e `cadastrar` em `src/sessao.js` pelas chamadas reais. `entrar` deve guardar o ID devolvido pelo back-end, que passa a ser o `clienteId`. As telas já tratam carregamento, envio repetido e erros da API.
+- 401 no login informa credenciais incorretas. Nas demais chamadas, encerra a sessão e leva ao login.
+- 403 informa a falta de permissão. Em POST e PUT, a chamada é repetida uma vez com token novo, porque o token pode ter vencido.
 
-Nas chamadas de locação, 401 encerra a sessão e leva ao login, e 403 informa a falta de permissão.
+O cookie exige que a aplicação e a API fiquem no mesmo endereço, com `/api` encaminhado ao back-end.
