@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { definirAoExpirarSessao } from '../api.js';
-import { clienteAtual, encerrarSessao } from '../sessao.js';
+import { encerrarSessao, sair, usuarioAtual } from '../sessao.js';
 
 export default function Sistema() {
   const navegar = useNavigate();
-  const cliente = clienteAtual();
+  const usuario = usuarioAtual();
+  const [saindo, definirSaindo] = useState(false);
+  const [erroSair, definirErroSair] = useState('');
 
   useEffect(() => {
     definirAoExpirarSessao(() => {
@@ -15,11 +17,18 @@ export default function Sistema() {
     return () => definirAoExpirarSessao(null);
   }, [navegar]);
 
-  if (!cliente) return <Navigate to="/login" replace />;
+  if (!usuario) return <Navigate to="/login" replace />;
 
-  function sair() {
-    encerrarSessao();
-    navegar('/login');
+  async function aoSair() {
+    definirSaindo(true);
+    definirErroSair('');
+    try {
+      await sair();
+      navegar('/login');
+    } catch (erro) {
+      definirErroSair(erro.message);
+      definirSaindo(false);
+    }
   }
 
   return (
@@ -28,12 +37,13 @@ export default function Sistema() {
         <div className="topo-dentro">
           <p className="logo"><span className="logo-marca" aria-hidden="true" />Locação de Equipamentos</p>
           <div className="topo-conta">
-            <span>Cliente: <span className="mono">{cliente}</span></span>
-            <button type="button" className="topo-sair" onClick={sair}>Sair</button>
+            <span>{usuario.nome}</span>
+            <button type="button" className="topo-sair" disabled={saindo} onClick={aoSair}>{saindo ? 'Saindo…' : 'Sair'}</button>
           </div>
         </div>
       </header>
       <main className="pagina">
+        {erroSair && <div className="aviso aviso-erro" role="alert"><p>{erroSair}</p></div>}
         <Outlet />
       </main>
     </>

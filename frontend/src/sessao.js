@@ -1,20 +1,33 @@
-import { ErroApi } from './api.js';
+import { autenticar, buscarSessao, cadastrarUsuario, descartarCsrf, encerrarAutenticacao } from './api.js';
 
-// O clienteId é o ID do usuário devolvido pelo back-end. Enquanto as rotas de
-// autenticação não existem, entrar e cadastrar são provisórios: troque o corpo
-// deles pelas chamadas reais, sem mudar as telas.
-const CHAVE = 'locacao.clienteId';
-const CLIENTE_DESENVOLVIMENTO = import.meta.env.VITE_CLIENTE_ID || 'cliente-1';
+// A sessão vale pelo cookie HttpOnly do back-end. Este usuário é só a cópia local
+// para a interface e é recuperado de /api/auth/sessao ao carregar a aplicação.
+let usuario = null;
 
-const iniciarSessao = (usuario) => sessionStorage.setItem(CHAVE, usuario.id);
+export const usuarioAtual = () => usuario;
+export const clienteAtual = () => usuario?.id;
+export const cadastrar = cadastrarUsuario;
 
-export const clienteAtual = () => sessionStorage.getItem(CHAVE);
-export const encerrarSessao = () => sessionStorage.removeItem(CHAVE);
-
-export async function entrar() {
-  iniciarSessao({ id: CLIENTE_DESENVOLVIMENTO });
+export function encerrarSessao() {
+  usuario = null;
+  descartarCsrf();
 }
 
-export async function cadastrar() {
-  throw new ErroApi('Cadastro ainda não conectado ao servidor. Nenhuma conta foi criada.', 0);
+export async function recuperarSessao() {
+  try {
+    usuario = await buscarSessao();
+  } catch (erro) {
+    if (erro.status !== 401) throw erro;
+    encerrarSessao();
+  }
+}
+
+export async function entrar(credenciais) {
+  usuario = await autenticar(credenciais);
+  descartarCsrf();
+}
+
+export async function sair() {
+  await encerrarAutenticacao();
+  encerrarSessao();
 }

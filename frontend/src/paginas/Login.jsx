@@ -40,7 +40,6 @@ export default function Login() {
         <Campo id="email" rotulo="E-mail" type="email" autoComplete="email" value={email} erro={erroEmail} onChange={(e) => definirEmail(e.target.value)} />
         <Campo id="senha" rotulo="Senha" type="password" autoComplete="current-password" value={senha} erro={erroSenha} onChange={(e) => definirSenha(e.target.value)} />
         <button type="submit" className="btn btn-primario btn-bloco" disabled={enviando}>{enviando ? 'Entrando…' : 'Entrar'}</button>
-        <p className="ajuda">Autenticação ainda não conectada: os dados informados não são verificados.</p>
         <p className="acesso-rodape"><span className="suave">Ainda não tem conta?</span><Link className="btn-link" to="/cadastro">Criar conta</Link></p>
       </form>
     </Acesso>
