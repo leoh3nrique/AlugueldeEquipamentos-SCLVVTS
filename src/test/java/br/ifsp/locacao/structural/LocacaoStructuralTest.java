@@ -192,4 +192,23 @@ class LocacaoStructuralTest {
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
         assertThat(locacao.getPeriodo()).isEqualTo(periodo);
     }
+
+    @Test
+    @DisplayName("Rejeitar alteração com período nulo preservando período, itens e estado da reserva")
+    void rejeitaPeriodoNuloNaAlteracaoSemModificarReserva() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"), "Projetor",
+                new Dinheiro(new BigDecimal("50.00")));
+
+        assertThatThrownBy(() -> locacao.alterar(null, List.of(projetor)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Período é obrigatório");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getItens()).containsExactly(camera);
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+    }
 }
