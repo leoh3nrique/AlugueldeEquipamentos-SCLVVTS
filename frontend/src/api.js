@@ -1,4 +1,11 @@
 const BASE = '/api/locacoes';
+const MENSAGENS = {
+  401: 'Sua sessão expirou. Entre novamente.',
+  403: 'Você não tem permissão para esta operação.',
+};
+
+let aoExpirarSessao = null;
+export const definirAoExpirarSessao = (acao) => { aoExpirarSessao = acao; };
 
 export class ErroApi extends Error {
   constructor(mensagem, status) {
@@ -26,7 +33,8 @@ async function chamar(caminho, { metodo = 'GET', corpo } = {}) {
     dados = null;
   }
   if (!resposta.ok) {
-    throw new ErroApi(dados?.mensagem || 'Não foi possível concluir a operação. Tente novamente.', resposta.status);
+    if (resposta.status === 401) aoExpirarSessao?.();
+    throw new ErroApi(dados?.mensagem || MENSAGENS[resposta.status] || 'Não foi possível concluir a operação. Tente novamente.', resposta.status);
   }
   return dados;
 }

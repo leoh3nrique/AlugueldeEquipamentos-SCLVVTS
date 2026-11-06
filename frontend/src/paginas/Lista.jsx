@@ -63,7 +63,7 @@ export default function Lista() {
     definirResultado({ situacao: 'carregando' });
     listarLocacoes(clienteAtual(), estado)
       .then((locacoes) => ativo && definirResultado({ situacao: 'ok', locacoes }))
-      .catch((erro) => ativo && definirResultado({ situacao: 'erro', mensagem: erro.message }));
+      .catch((erro) => ativo && definirResultado({ situacao: 'erro', status: erro.status, mensagem: erro.message }));
     return () => { ativo = false; };
   }, [estado, tentativa]);
 
@@ -89,7 +89,7 @@ export default function Lista() {
           <div className="estado-tela" role="alert">
             <h2>Não foi possível carregar as locações</h2>
             <p className="suave">{resultado.mensagem}</p>
-            <button type="button" className="btn btn-secundario" onClick={() => definirTentativa((n) => n + 1)}>Tentar novamente</button>
+            {resultado.status !== 403 && <button type="button" className="btn btn-secundario" onClick={() => definirTentativa((n) => n + 1)}>Tentar novamente</button>}
           </div>
         )}
         {vazia && !estado && (
