@@ -56,6 +56,7 @@ class LocacaoControllerMutationTest {
     private ConsultarLocacoesService consultar;
     private CancelarLocacaoService cancelar;
     private ConfirmarRetiradaService retirada;
+    private RenovarLocacaoService renovar;
     private ObjectMapper mapper;
     private MockMvc mvc;
     private Locacao reserva;
@@ -66,9 +67,10 @@ class LocacaoControllerMutationTest {
         consultar = mock(ConsultarLocacoesService.class);
         cancelar = mock(CancelarLocacaoService.class);
         retirada = mock(ConfirmarRetiradaService.class);
+        renovar = mock(RenovarLocacaoService.class);
         LocacaoController controller = new LocacaoController(
                 criar, mock(AlterarLocacaoService.class),
-                retirada, mock(RenovarLocacaoService.class),
+                retirada, renovar,
                 mock(RegistrarDevolucaoService.class), cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -181,6 +183,34 @@ class LocacaoControllerMutationTest {
         esperado.put("estado", "EM_ANDAMENTO");
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(retirada).confirmar(reserva.getId(), dataRetirada);
+    }
+
+    @Test
+    @DisplayName("POST de renovação retorna prazo e valores atualizados com status 200")
+    void renovaLocacaoRetornaJsonComPrazoEValoresAtualizados() throws Exception {
+        LocalDate dataSolicitacao = LocalDate.of(2026, 11, 12);
+        reserva.confirmarRetirada(LocalDate.of(2026, 11, 10));
+        reserva.renovar(3, dataSolicitacao);
+        when(renovar.renovar(reserva.getId(), 3, dataSolicitacao)).thenReturn(reserva);
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/renovacoes", reserva.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"dias": 3, "data": "2026-11-12"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado();
+        esperado.put("estado", "EM_ANDAMENTO");
+        esperado.put("fim", "2026-11-16");
+        esperado.put("renovacoes", 1);
+        esperado.put("valorNormal", 600.00);
+        esperado.put("valorTotal", 600.00);
+        ((ObjectNode) esperado.withArray("itens").get(0)).put("fimContratado", "2026-11-16");
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(renovar).renovar(reserva.getId(), 3, dataSolicitacao);
     }
 
     private JsonNode jsonDaReservaEsperado() throws Exception {
