@@ -44,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LocacaoControllerMutationTest {
 
     private CriarLocacaoService criar;
+    private AlterarLocacaoService alterar;
     private ConsultarLocacoesService consultar;
     private CancelarLocacaoService cancelar;
     private ConfirmarRetiradaService retirada;
@@ -65,13 +67,14 @@ class LocacaoControllerMutationTest {
     @BeforeEach
     void preparaApi() {
         criar = mock(CriarLocacaoService.class);
+        alterar = mock(AlterarLocacaoService.class);
         consultar = mock(ConsultarLocacoesService.class);
         cancelar = mock(CancelarLocacaoService.class);
         retirada = mock(ConfirmarRetiradaService.class);
         renovar = mock(RenovarLocacaoService.class);
         devolver = mock(RegistrarDevolucaoService.class);
         LocacaoController controller = new LocacaoController(
-                criar, mock(AlterarLocacaoService.class),
+                criar, alterar,
                 retirada, renovar,
                 devolver, cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
@@ -242,6 +245,53 @@ class LocacaoControllerMutationTest {
         equipamento.put("dataDevolucao", "2026-11-15");
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(devolver).registrar(reserva.getId(), codigos, dataDevolucao);
+    }
+
+    @Test
+    @DisplayName("PUT de reserva retorna novo período e equipamento com status 200")
+    void alteraReservaRetornaJsonComPeriodoEEquipamentoAtualizados() throws Exception {
+        PeriodoLocacao novoPeriodo = new PeriodoLocacao(
+                LocalDate.of(2026, 11, 12), LocalDate.of(2026, 11, 16));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"),
+                "Projetor", new Dinheiro(new BigDecimal("150.00")));
+        reserva.alterar(novoPeriodo, List.of(projetor));
+        when(alterar.alterar(eq(reserva.getId()), eq(novoPeriodo), anyList())).thenReturn(reserva);
+
+        String resposta = mvc.perform(put("/api/locacoes/{id}", reserva.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "inicio": "2026-11-12",
+                                  "fim": "2026-11-16",
+                                  "itens": [{
+                                    "codigo": "PROJ01",
+                                    "descricao": "Projetor",
+                                    "diaria": 150.00
+                                  }]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado();
+        esperado.put("inicio", "2026-11-12");
+        esperado.put("fim", "2026-11-16");
+        esperado.put("valorNormal", 600.00);
+        esperado.put("valorTotal", 600.00);
+        ObjectNode equipamento = (ObjectNode) esperado.withArray("itens").get(0);
+        equipamento.put("codigo", "PROJ01");
+        equipamento.put("descricao", "Projetor");
+        equipamento.put("diaria", 150.00);
+        equipamento.put("fimContratado", "2026-11-16");
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        ArgumentCaptor<List<ItemLocacao>> itens = ArgumentCaptor.captor();
+        verify(alterar).alterar(eq(reserva.getId()), eq(novoPeriodo), itens.capture());
+        assertThat(itens.getValue()).singleElement().satisfies(item -> {
+            assertThat(item.codigo().valor()).isEqualTo("PROJ01");
+            assertThat(item.descricao()).isEqualTo("Projetor");
+            assertThat(item.diaria().valor()).isEqualByComparingTo("150.00");
+        });
     }
 
     private JsonNode jsonDaReservaEsperado() throws Exception {
