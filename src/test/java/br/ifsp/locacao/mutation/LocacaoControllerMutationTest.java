@@ -55,6 +55,7 @@ class LocacaoControllerMutationTest {
     private CriarLocacaoService criar;
     private ConsultarLocacoesService consultar;
     private CancelarLocacaoService cancelar;
+    private ConfirmarRetiradaService retirada;
     private ObjectMapper mapper;
     private MockMvc mvc;
     private Locacao reserva;
@@ -64,9 +65,10 @@ class LocacaoControllerMutationTest {
         criar = mock(CriarLocacaoService.class);
         consultar = mock(ConsultarLocacoesService.class);
         cancelar = mock(CancelarLocacaoService.class);
+        retirada = mock(ConfirmarRetiradaService.class);
         LocacaoController controller = new LocacaoController(
                 criar, mock(AlterarLocacaoService.class),
-                mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
+                retirada, mock(RenovarLocacaoService.class),
                 mock(RegistrarDevolucaoService.class), cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -157,6 +159,28 @@ class LocacaoControllerMutationTest {
         esperado.put("estado", "CANCELADA");
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(cancelar).cancelar(reserva.getId());
+    }
+
+    @Test
+    @DisplayName("POST de retirada retorna os dados da locação em andamento com status 200")
+    void confirmaRetiradaRetornaJsonComEstadoEmAndamento() throws Exception {
+        LocalDate dataRetirada = LocalDate.of(2026, 11, 11);
+        reserva.confirmarRetirada(dataRetirada);
+        when(retirada.confirmar(reserva.getId(), dataRetirada)).thenReturn(reserva);
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/retirada", reserva.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"data": "2026-11-11"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado();
+        esperado.put("estado", "EM_ANDAMENTO");
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(retirada).confirmar(reserva.getId(), dataRetirada);
     }
 
     private JsonNode jsonDaReservaEsperado() throws Exception {
