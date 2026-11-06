@@ -115,12 +115,14 @@ export default function AcoesLocacao({ locacao, aoConcluir, aoRecusar, aoAbrir }
     }
   };
 
-  const Painel = PAINEIS[painel];
+  // Uma recusa recarrega a locação: o painel aberto pode não valer para o novo estado.
+  const disponivel = { retirada: aberta, cancelar: aberta, devolucao: ativa, renovar: ativa && !limiteAtingido };
+  const Painel = disponivel[painel] ? PAINEIS[painel] : null;
 
   return (
     <section className="cartao" aria-labelledby="titulo-acoes">
       <div className="cartao-corpo">
-        <h2 id="titulo-acoes">{TITULOS[painel] || 'Ações'}</h2>
+        <h2 id="titulo-acoes">{Painel ? TITULOS[painel] : 'Ações'}</h2>
         {erro && <div className="aviso aviso-erro" role="alert"><p>{erro}</p></div>}
         {Painel && <Painel locacao={locacao} enviar={enviar} enviando={enviando} aoVoltar={() => abrir('')} />}
         {!Painel && (
