@@ -230,4 +230,20 @@ class LocacaoStructuralTest {
         assertThat(locacao.bloqueiaReserva(camera.codigo())).isFalse();
         assertThat(locacao.bloqueiaReserva(projetor.codigo())).isTrue();
     }
+
+    @Test
+    @DisplayName("Não bloquear reservas de equipamento que não pertence à locação")
+    void naoBloqueiaReservaDeEquipamentoForaDaLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        CodigoEquipamento outro = new CodigoEquipamento("PROJ01");
+
+        assertThat(locacao.bloqueiaReserva(outro)).isFalse();
+        assertThat(locacao.bloqueiaReserva(camera.codigo())).isTrue();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        assertThat(locacao.getItens()).containsExactly(camera);
+    }
 }
