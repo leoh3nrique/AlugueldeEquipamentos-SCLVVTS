@@ -38,30 +38,26 @@ function Formulario({ id, inicial }) {
   const [inicio, definirInicio] = useState(inicial.inicio);
   const [fim, definirFim] = useState(inicial.fim);
   const [itens, definirItens] = useState(inicial.itens);
-  const [erros, definirErros] = useState(SEM_ERROS);
-  const [erroGeral, definirErroGeral] = useState('');
+  const [tentou, definirTentou] = useState(false);
+  const [erroApi, definirErroApi] = useState('');
   const [salvando, definirSalvando] = useState(false);
 
+  const validacao = validar({ inicio, fim, itens });
+  const erros = tentou ? validacao.erros : SEM_ERROS;
+  const erroGeral = erroApi || (tentou && !validacao.valido ? 'Corrija os campos destacados para continuar.' : '');
   const diarias = inicio && fim ? Math.max(dias(inicio, fim), 0) : 0;
   const subtotal = (item) => { const valor = numero(item.diaria); return valor > 0 ? valor * diarias : 0; };
   const destino = id ? `/locacoes/${id}` : '/locacoes';
 
   const mudarItem = (indice, campo, valor) => definirItens(itens.map((item, i) => (i === indice ? { ...item, [campo]: valor } : item)));
 
-  function remover(indice) {
-    definirItens(itens.filter((_, i) => i !== indice));
-    definirErros({ ...erros, itens: erros.itens.filter((_, i) => i !== indice) });
-  }
+  const remover = (indice) => definirItens(itens.filter((_, i) => i !== indice));
 
   async function salvar(evento) {
     evento.preventDefault();
-    const resultado = validar({ inicio, fim, itens });
-    definirErros(resultado.erros);
-    if (!resultado.valido) {
-      definirErroGeral('Corrija os campos destacados para continuar.');
-      return;
-    }
-    definirErroGeral('');
+    definirTentou(true);
+    definirErroApi('');
+    if (!validacao.valido) return;
     definirSalvando(true);
     const reserva = {
       inicio,
@@ -72,7 +68,7 @@ function Formulario({ id, inicial }) {
       const salva = id ? await alterarLocacao(id, reserva) : await criarLocacao({ ...reserva, clienteId: clienteAtual() });
       navegar(`/locacoes/${salva.id}`, { state: { aviso: id ? 'Reserva alterada.' : 'Reserva criada.' } });
     } catch (erro) {
-      definirErroGeral(erro.message);
+      definirErroApi(erro.message);
       definirSalvando(false);
     }
   }

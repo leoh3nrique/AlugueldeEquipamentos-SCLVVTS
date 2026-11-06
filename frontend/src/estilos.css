@@ -11,7 +11,7 @@ body { margin: 0; }
 .app h1, .app h2, .app h3 { font-family: 'Space Grotesk', Inter, system-ui, sans-serif; letter-spacing: -0.01em; line-height: 1.15; }
 .app h1 { font-size: 32px; font-weight: 700; }
 .app h2 { font-size: 20px; font-weight: 600; }
-.app button, .app input { font: inherit; color: inherit; }
+:where(.app) button, :where(.app) input { font: inherit; color: inherit; }
 .app :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
 .mono { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; }
 .suave { color: var(--suave); }
