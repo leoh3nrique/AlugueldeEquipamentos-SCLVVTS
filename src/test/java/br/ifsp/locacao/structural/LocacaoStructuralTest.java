@@ -173,4 +173,23 @@ class LocacaoStructuralTest {
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
         assertThat(locacao.getPeriodo()).isEqualTo(periodo);
     }
+
+    @Test
+    @DisplayName("Rejeitar código nulo após um código válido na devolução sem alterar a locação")
+    void rejeitaCodigoNuloNaDevolucaoSemAlterarLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        locacao.confirmarRetirada(inicio);
+        List<CodigoEquipamento> codigos = Arrays.asList(camera.codigo(), null);
+
+        assertThatThrownBy(() -> locacao.registrarDevolucao(codigos, inicio.plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Informe equipamentos distintos para devolver");
+        assertThat(locacao.estaDevolvido(camera.codigo())).isFalse();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+    }
 }
