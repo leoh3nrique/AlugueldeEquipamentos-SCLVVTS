@@ -76,4 +76,20 @@ class SqliteLocacaoRepositoryTest {
         assertThat(encontrada.getId()).isEqualTo(salva.getId());
         assertThat(repository.buscarPorId(idInexistente)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Disponibilidade distingue período adjacente anterior de período sobreposto")
+    void distinguePeriodoAnteriorAdjacenteDePeriodoSobreposto() {
+        SqliteLocacaoRepository repository = repo();
+        Locacao salva = locacao();
+        repository.salvar(salva);
+        CodigoEquipamento codigo = new CodigoEquipamento("CAM01");
+        LocalDate inicioReserva = salva.getPeriodo().inicio();
+        LocalDate inicioConsulta = inicioReserva.minusDays(2);
+        PeriodoLocacao adjacente = new PeriodoLocacao(inicioConsulta, inicioReserva);
+        PeriodoLocacao sobreposto = new PeriodoLocacao(inicioConsulta, inicioReserva.plusDays(1));
+
+        assertThat(repository.estaReservado(codigo, adjacente)).isFalse();
+        assertThat(repository.estaReservado(codigo, sobreposto)).isTrue();
+    }
 }
