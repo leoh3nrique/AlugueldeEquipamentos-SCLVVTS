@@ -137,4 +137,22 @@ class LocacaoStructuralTest {
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
         assertThat(locacao.dados().retirada()).isEqualTo(retirada);
     }
+
+    @Test
+    @DisplayName("Rejeitar devolução com data nula preservando o equipamento pendente e a locação em andamento")
+    void rejeitaDataDeDevolucaoNulaSemAlterarLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        locacao.confirmarRetirada(inicio);
+
+        assertThatThrownBy(() -> locacao.registrarDevolucao(List.of(camera.codigo()), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Devolução não pode anteceder a retirada");
+        assertThat(locacao.estaDevolvido(camera.codigo())).isFalse();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+    }
 }
