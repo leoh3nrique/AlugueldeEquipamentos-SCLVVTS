@@ -2,6 +2,7 @@ package br.ifsp.locacao.structural;
 
 import br.ifsp.locacao.domain.CodigoEquipamento;
 import br.ifsp.locacao.domain.Dinheiro;
+import br.ifsp.locacao.domain.EstadoLocacao;
 import br.ifsp.locacao.domain.ItemLocacao;
 import br.ifsp.locacao.domain.Locacao;
 import br.ifsp.locacao.domain.PeriodoLocacao;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag("Structural")
@@ -80,5 +82,21 @@ class LocacaoStructuralTest {
         assertThatThrownBy(() -> new Locacao("cliente-1", periodo, itens))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Itens são obrigatórios");
+    }
+
+    @Test
+    @DisplayName("Rejeitar retirada com data nula preservando a locação aberta e sem retirada")
+    void rejeitaDataDeRetiradaNulaSemAlterarLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+
+        assertThatThrownBy(() -> locacao.confirmarRetirada(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Data de retirada é obrigatória");
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
+        assertThat(locacao.dados().retirada()).isNull();
     }
 }
