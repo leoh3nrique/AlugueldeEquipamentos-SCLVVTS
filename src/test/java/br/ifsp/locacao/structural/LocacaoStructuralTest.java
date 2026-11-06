@@ -211,4 +211,23 @@ class LocacaoStructuralTest {
         assertThat(locacao.getItens()).containsExactly(camera);
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
     }
+
+    @Test
+    @DisplayName("Liberar equipamento devolvido mantendo o pendente bloqueado na devolução parcial")
+    void naoBloqueiaReservaDeItemDevolvidoEmLocacaoParcial() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        ItemLocacao projetor = new ItemLocacao(new CodigoEquipamento("PROJ01"), "Projetor",
+                new Dinheiro(new BigDecimal("50.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera, projetor));
+        locacao.confirmarRetirada(inicio);
+        locacao.registrarDevolucao(List.of(camera.codigo()), periodo.fim());
+
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.PARCIALMENTE_DEVOLVIDA);
+        assertThat(locacao.estaDevolvido(camera.codigo())).isTrue();
+        assertThat(locacao.bloqueiaReserva(camera.codigo())).isFalse();
+        assertThat(locacao.bloqueiaReserva(projetor.codigo())).isTrue();
+    }
 }
