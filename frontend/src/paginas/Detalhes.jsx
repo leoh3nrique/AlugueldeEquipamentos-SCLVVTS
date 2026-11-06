@@ -5,7 +5,8 @@ import AcoesLocacao from '../componentes/AcoesLocacao.jsx';
 import { IconeConfirmar, IconeFechar, IconeVoltar } from '../componentes/Icones.jsx';
 import { ESTADOS, dataBr, dataHoraBr, dias, dinheiro, idCurto, periodoBr, plural } from '../formato.js';
 
-const TITULOS_ERRO = { 403: 'Acesso não permitido', 404: 'Locação não encontrada' };
+// A API responde 400 quando o ID da URL não é válido.
+const TITULOS_ERRO = { 400: 'Locação não encontrada', 403: 'Acesso não permitido', 404: 'Locação não encontrada' };
 
 function situacaoDoItem(item, estado) {
   if (item.devolvido) return { texto: `Devolvido em ${dataBr(item.dataDevolucao)}`, classe: 'tag tag-finalizada' };
@@ -101,7 +102,7 @@ export default function Detalhes() {
         <section className="cartao">
           <div className="estado-tela" role="alert">
             <h2>{TITULOS_ERRO[carga.status] || 'Não foi possível carregar a locação'}</h2>
-            {carga.status !== 404 && <p className="suave">{carga.mensagem}</p>}
+            {carga.status !== 400 && carga.status !== 404 && <p className="suave">{carga.mensagem}</p>}
             {TITULOS_ERRO[carga.status]
               ? <Link className="btn btn-secundario" to="/locacoes">Voltar para locações</Link>
               : <button type="button" className="btn btn-secundario" onClick={() => definirTentativa((n) => n + 1)}>Tentar novamente</button>}
