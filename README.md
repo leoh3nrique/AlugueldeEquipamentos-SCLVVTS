@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 128 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação e 6 testes de integração com SQLite real.
+O build executa 129 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação e 7 testes de integração com SQLite real.
 
 As três suítes podem ser executadas separadamente:
 
