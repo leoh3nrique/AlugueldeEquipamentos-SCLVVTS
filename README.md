@@ -17,7 +17,7 @@ Requisito: JDK 17 ou superior. O Maven Wrapper incluído baixa o Maven na primei
 ./mvnw spring-boot:run
 ```
 
-A aplicação inicia na porta 8080 e cria a tabela de locações automaticamente no SQLite local `database.db`.
+A aplicação inicia na porta 8080 e cria as tabelas de locações e usuários automaticamente no SQLite local `database.db`.
 O agregado completo é persistido via JDBC como documento JSON: identidade, criação, estado, itens, prazos, retirada, devoluções e renovações. Não há JPA ou Lombok.
 
 Para compilar e executar os testes disponíveis:
@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 149 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 19 testes unitários de cadastro e 8 testes de integração com SQLite real.
+O build executa 150 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 20 testes unitários de cadastro e 8 testes de integração com SQLite real.
 
 As três suítes podem ser executadas separadamente:
 
@@ -36,7 +36,7 @@ As três suítes podem ser executadas separadamente:
 ./mvnw -Dtest=UnitTestSuite test
 ```
 
-As suítes executam, respectivamente, 46, 31 e 141 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+As suítes executam, respectivamente, 46, 31 e 142 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
 
 Os caminhos não alcançáveis estão justificados em [Structural.md](Structural.md).
 
@@ -58,6 +58,7 @@ Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` 
 
 | Método | Caminho | Operação |
 |---|---|---|
+| POST | `/api/auth/cadastro` | Cadastrar usuário (201, com `id`, `nome` e `email`) |
 | POST | `/api/locacoes` | Criar reserva (201 e cabeçalho Location) |
 | GET | `/api/locacoes/{id}` | Buscar por identificador |
 | GET | `/api/locacoes?clienteId=cliente-1&estado=EM_ANDAMENTO` | Listar por cliente; estado opcional |
@@ -66,6 +67,8 @@ Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` 
 | POST | `/api/locacoes/{id}/renovacoes` | Renovar prazo |
 | POST | `/api/locacoes/{id}/devolucoes` | Devolver um ou mais equipamentos |
 | POST | `/api/locacoes/{id}/cancelamento` | Cancelar reserva aberta |
+
+O cadastro recebe `nome`, `email` e `senha` no corpo JSON e retorna apenas `id`, `nome` e `email`. Ele não inicia uma sessão. Login, sessão e proteção CSRF ainda estão em implementação.
 
 Exemplo de criação:
 
