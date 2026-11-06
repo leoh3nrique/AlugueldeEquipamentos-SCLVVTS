@@ -21,6 +21,9 @@ public class AutenticarUsuarioService {
     }
 
     public Optional<Usuario> autenticar(String email, String senha) {
+        if (email == null || email.isBlank() || senha == null || senha.isBlank()) {
+            return Optional.empty();
+        }
         String emailNormalizado = email.strip().toLowerCase(Locale.ROOT);
         return repository.buscarPorEmail(emailNormalizado)
                 .filter(usuario -> encoder.matches(senha, usuario.senhaHash()));
