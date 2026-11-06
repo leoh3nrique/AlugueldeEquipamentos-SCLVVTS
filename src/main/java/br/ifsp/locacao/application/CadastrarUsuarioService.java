@@ -20,6 +20,9 @@ public class CadastrarUsuarioService {
     }
 
     public Usuario cadastrar(String nome, String email, String senha) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("Nome é obrigatório");
+        }
         Usuario usuario = new Usuario(UUID.randomUUID(), nome, email, encoder.encode(senha));
         repository.salvar(usuario);
         return usuario;
