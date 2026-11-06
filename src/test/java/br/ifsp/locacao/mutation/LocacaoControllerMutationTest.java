@@ -57,6 +57,7 @@ class LocacaoControllerMutationTest {
     private CancelarLocacaoService cancelar;
     private ConfirmarRetiradaService retirada;
     private RenovarLocacaoService renovar;
+    private RegistrarDevolucaoService devolver;
     private ObjectMapper mapper;
     private MockMvc mvc;
     private Locacao reserva;
@@ -68,10 +69,11 @@ class LocacaoControllerMutationTest {
         cancelar = mock(CancelarLocacaoService.class);
         retirada = mock(ConfirmarRetiradaService.class);
         renovar = mock(RenovarLocacaoService.class);
+        devolver = mock(RegistrarDevolucaoService.class);
         LocacaoController controller = new LocacaoController(
                 criar, mock(AlterarLocacaoService.class),
                 retirada, renovar,
-                mock(RegistrarDevolucaoService.class), cancelar, consultar);
+                devolver, cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mvc = MockMvcBuilders.standaloneSetup(controller)
@@ -211,6 +213,35 @@ class LocacaoControllerMutationTest {
         ((ObjectNode) esperado.withArray("itens").get(0)).put("fimContratado", "2026-11-16");
         assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
         verify(renovar).renovar(reserva.getId(), 3, dataSolicitacao);
+    }
+
+    @Test
+    @DisplayName("POST de devolução com atraso retorna multa e locação finalizada com status 200")
+    void registraDevolucaoRetornaJsonComMultaEEstadoFinalizada() throws Exception {
+        LocalDate dataDevolucao = LocalDate.of(2026, 11, 15);
+        List<CodigoEquipamento> codigos = List.of(new CodigoEquipamento("CAM01"));
+        reserva.confirmarRetirada(LocalDate.of(2026, 11, 10));
+        reserva.registrarDevolucao(codigos, dataDevolucao);
+        when(devolver.registrar(reserva.getId(), codigos, dataDevolucao)).thenReturn(reserva);
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/devolucoes", reserva.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"codigos": ["CAM01"], "data": "2026-11-15"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado();
+        esperado.put("estado", "FINALIZADA");
+        esperado.put("multa", 40.00);
+        esperado.put("valorTotal", 340.00);
+        ObjectNode equipamento = (ObjectNode) esperado.withArray("itens").get(0);
+        equipamento.put("devolvido", true);
+        equipamento.put("dataDevolucao", "2026-11-15");
+        assertThat(mapper.readTree(resposta)).isEqualTo(esperado);
+        verify(devolver).registrar(reserva.getId(), codigos, dataDevolucao);
     }
 
     private JsonNode jsonDaReservaEsperado() throws Exception {
