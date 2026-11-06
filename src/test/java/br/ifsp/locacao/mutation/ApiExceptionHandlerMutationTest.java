@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,16 +39,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ApiExceptionHandlerMutationTest {
 
     private ConsultarLocacoesService consultar;
+    private CancelarLocacaoService cancelar;
     private ObjectMapper mapper;
     private MockMvc mvc;
 
     @BeforeEach
     void preparaApi() {
         consultar = mock(ConsultarLocacoesService.class);
+        cancelar = mock(CancelarLocacaoService.class);
         LocacaoController controller = new LocacaoController(
                 mock(CriarLocacaoService.class), mock(AlterarLocacaoService.class),
                 mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
-                mock(RegistrarDevolucaoService.class), mock(CancelarLocacaoService.class), consultar);
+                mock(RegistrarDevolucaoService.class), cancelar, consultar);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mvc = MockMvcBuilders.standaloneSetup(controller)
@@ -70,5 +73,23 @@ class ApiExceptionHandlerMutationTest {
                 {"mensagem": "Locação não encontrada"}
                 """));
         verify(consultar).buscarPorId(id);
+    }
+
+    @Test
+    @DisplayName("POST de cancelamento em estado incompatível retorna status 409 e mensagem em JSON")
+    void cancelamentoEmEstadoIncompativelRetornaMensagemDeErro() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(cancelar.cancelar(id)).thenThrow(
+                new IllegalStateException("Somente locações abertas podem ser canceladas"));
+
+        String resposta = mvc.perform(post("/api/locacoes/{id}/cancelamento", id))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(mapper.readTree(resposta)).isEqualTo(mapper.readTree("""
+                {"mensagem": "Somente locações abertas podem ser canceladas"}
+                """));
+        verify(cancelar).cancelar(id);
     }
 }
