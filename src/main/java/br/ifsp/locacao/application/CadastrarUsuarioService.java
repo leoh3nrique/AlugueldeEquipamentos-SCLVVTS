@@ -26,6 +26,9 @@ public class CadastrarUsuarioService {
         if (email == null || !email.matches("[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+")) {
             throw new IllegalArgumentException("E-mail inválido");
         }
+        if (senha == null || senha.isBlank()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
         Usuario usuario = new Usuario(UUID.randomUUID(), nome, email, encoder.encode(senha));
         repository.salvar(usuario);
         return usuario;

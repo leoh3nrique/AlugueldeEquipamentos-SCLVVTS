@@ -65,4 +65,18 @@ class CadastrarUsuarioServiceTest {
                 .hasMessage("E-mail inválido");
         verifyNoInteractions(repository);
     }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    @DisplayName("Cadastro rejeita senha ausente ou em branco sem salvar o usuário")
+    void rejeitaCadastroSemSenha(String senha) {
+        UsuarioRepository repository = mock(UsuarioRepository.class);
+        CadastrarUsuarioService service = new CadastrarUsuarioService(repository);
+
+        assertThatThrownBy(() -> service.cadastrar("Ana Silva", "ana@example.com", senha))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Senha é obrigatória");
+        verifyNoInteractions(repository);
+    }
 }
