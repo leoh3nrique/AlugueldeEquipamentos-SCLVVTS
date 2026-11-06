@@ -99,4 +99,22 @@ class LocacaoStructuralTest {
         assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.ABERTA);
         assertThat(locacao.dados().retirada()).isNull();
     }
+
+    @Test
+    @DisplayName("Rejeitar renovação com data de solicitação nula sem alterar prazo, contador ou estado")
+    void rejeitaDataDeSolicitacaoNulaNaRenovacaoSemAlterarLocacao() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        Locacao locacao = new Locacao("cliente-1", periodo, List.of(camera));
+        locacao.confirmarRetirada(inicio);
+
+        assertThatThrownBy(() -> locacao.renovar(1, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Data da solicitação é obrigatória");
+        assertThat(locacao.getPeriodo()).isEqualTo(periodo);
+        assertThat(locacao.getQuantidadeRenovacoes()).isZero();
+        assertThat(locacao.getEstado()).isEqualTo(EstadoLocacao.EM_ANDAMENTO);
+    }
 }
