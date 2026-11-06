@@ -42,4 +42,17 @@ class LocacaoStructuralTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cliente, período e relógio são obrigatórios");
     }
+
+    @Test
+    @DisplayName("Rejeitar relógio nulo na criação mesmo com cliente, período e equipamento válidos")
+    void rejeitaRelogioNuloNaCriacaoComDemaisDadosValidos() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+
+        assertThatThrownBy(() -> new Locacao("cliente-1", periodo, List.of(camera), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Cliente, período e relógio são obrigatórios");
+    }
 }
