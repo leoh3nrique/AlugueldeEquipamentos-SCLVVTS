@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 130 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação e 8 testes de integração com SQLite real.
+O build executa 131 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 1 teste unitário de cadastro e 8 testes de integração com SQLite real.
 
 As três suítes podem ser executadas separadamente:
 
@@ -36,7 +36,7 @@ As três suítes podem ser executadas separadamente:
 ./mvnw -Dtest=UnitTestSuite test
 ```
 
-As suítes executam, respectivamente, 46, 31 e 122 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+As suítes executam, respectivamente, 46, 31 e 123 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
 
 Os caminhos não alcançáveis estão justificados em [Structural.md](Structural.md).
 
@@ -110,4 +110,4 @@ Erros retornam JSON com `mensagem`: 400 para entradas inválidas ou equipamento 
 
 A estrutura Spring Boot e o Maven Wrapper foram adaptados do [projeto base da disciplina](https://github.com/lucas-ifsp/demo-auth-app), licenciado sob GPL-3.0 (ver [LICENSE](LICENSE)).
 Foram mantidas as versões de Spring Boot e SQLite da base. O projeto usa Java 17, disponível no ambiente de desenvolvimento, e JDBC para acesso ao banco, sem JPA ou Lombok, conforme o enunciado.
-O exemplo de autenticação da base não foi incorporado porque está fora do escopo aprovado.
+O exemplo de autenticação da base não foi incorporado.
