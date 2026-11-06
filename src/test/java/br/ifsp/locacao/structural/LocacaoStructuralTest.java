@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -63,6 +64,20 @@ class LocacaoStructuralTest {
         PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
 
         assertThatThrownBy(() -> new Locacao("cliente-1", periodo, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Itens são obrigatórios");
+    }
+
+    @Test
+    @DisplayName("Rejeitar lista com item nulo mesmo após um equipamento válido")
+    void rejeitaListaComItemNuloAposEquipamentoValido() {
+        LocalDate inicio = LocalDate.of(2026, 11, 5);
+        PeriodoLocacao periodo = new PeriodoLocacao(inicio, inicio.plusDays(3));
+        ItemLocacao camera = new ItemLocacao(new CodigoEquipamento("CAM01"), "Câmera",
+                new Dinheiro(new BigDecimal("100.00")));
+        List<ItemLocacao> itens = Arrays.asList(camera, null);
+
+        assertThatThrownBy(() -> new Locacao("cliente-1", periodo, itens))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Itens são obrigatórios");
     }
