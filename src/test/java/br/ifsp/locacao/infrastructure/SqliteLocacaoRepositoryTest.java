@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.time.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
 @Tag("IntegrationTest")
@@ -60,5 +61,19 @@ class SqliteLocacaoRepositoryTest {
         Locacao recuperada=repo().buscarPorId(l.getId()).orElseThrow();
         assertThat(recuperada.getPeriodo()).isEqualTo(l.getPeriodo());
         assertThat(recuperada.getQuantidadeRenovacoes()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Buscar ID inexistente não retorna outra locação salva no SQLite")
+    void buscaPorIdInexistenteNaoRetornaOutraLocacao() {
+        SqliteLocacaoRepository repository = repo();
+        Locacao salva = locacao();
+        repository.salvar(salva);
+        UUID idInexistente = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+        Locacao encontrada = repository.buscarPorId(salva.getId()).orElseThrow();
+
+        assertThat(encontrada.getId()).isEqualTo(salva.getId());
+        assertThat(repository.buscarPorId(idInexistente)).isEmpty();
     }
 }
