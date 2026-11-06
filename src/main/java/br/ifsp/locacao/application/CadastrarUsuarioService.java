@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -23,13 +24,17 @@ public class CadastrarUsuarioService {
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Nome é obrigatório");
         }
-        if (email == null || !email.matches("[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+")) {
+        if (email == null || !email.strip().matches("[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+")) {
             throw new IllegalArgumentException("E-mail inválido");
         }
         if (senha == null || senha.isBlank()) {
             throw new IllegalArgumentException("Senha é obrigatória");
         }
-        Usuario usuario = new Usuario(UUID.randomUUID(), nome, email, encoder.encode(senha));
+        String emailNormalizado = email.strip().toLowerCase(Locale.ROOT);
+        if (repository.buscarPorEmail(emailNormalizado).isPresent()) {
+            throw new IllegalStateException("E-mail já cadastrado");
+        }
+        Usuario usuario = new Usuario(UUID.randomUUID(), nome, emailNormalizado, encoder.encode(senha));
         repository.salvar(usuario);
         return usuario;
     }

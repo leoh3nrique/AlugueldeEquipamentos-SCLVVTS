@@ -11,11 +11,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @Tag("UnitTest")
 class CadastrarUsuarioServiceTest {
@@ -78,5 +84,22 @@ class CadastrarUsuarioServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Senha é obrigatória");
         verifyNoInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ana@example.com", "ANA@EXAMPLE.COM", " ana@example.com "})
+    @DisplayName("Cadastro rejeita e-mail já cadastrado mesmo com maiúsculas ou espaços nas pontas")
+    void rejeitaCadastroComEmailJaCadastrado(String email) {
+        UsuarioRepository repository = mock(UsuarioRepository.class);
+        CadastrarUsuarioService service = new CadastrarUsuarioService(repository);
+        Usuario existente = new Usuario(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "Ana Silva", "ana@example.com", "hash-original");
+        when(repository.buscarPorEmail("ana@example.com")).thenReturn(Optional.of(existente));
+
+        assertThatThrownBy(() -> service.cadastrar("Outra Ana", email, "OutraSenha123!"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("E-mail já cadastrado");
+        verify(repository).buscarPorEmail("ana@example.com");
+        verify(repository, never()).salvar(any(Usuario.class));
     }
 }
