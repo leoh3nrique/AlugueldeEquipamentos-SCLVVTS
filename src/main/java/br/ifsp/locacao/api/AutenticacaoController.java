@@ -52,6 +52,14 @@ public class AutenticacaoController {
     public record LoginEntrada(String email, String senha) {}
     public record UsuarioSaida(UUID id, String nome, String email) {}
 
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuário cadastrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioSaida.class))),
+            @ApiResponse(responseCode = "400", description = "Campos inválidos",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class))),
+            @ApiResponse(responseCode = "409", description = "E-mail já cadastrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class)))
+    })
     @PostMapping("/cadastro")
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioSaida cadastrar(@RequestBody CadastroEntrada entrada) {
