@@ -6,10 +6,13 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.AuthenticationException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
     public record Erro(String mensagem) {}
+    @ExceptionHandler(AuthenticationException.class)
+    ResponseEntity<Erro> autenticacao(AuthenticationException e) { return ResponseEntity.status(401).body(new Erro("E-mail ou senha inválidos")); }
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<Erro> validacao(IllegalArgumentException e) { return ResponseEntity.badRequest().body(new Erro(e.getMessage())); }
     @ExceptionHandler(IllegalStateException.class)

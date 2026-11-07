@@ -1,5 +1,6 @@
 package br.ifsp.locacao.api;
 
+import br.ifsp.locacao.application.AutenticarUsuarioService;
 import br.ifsp.locacao.application.CadastrarUsuarioService;
 import br.ifsp.locacao.domain.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -30,7 +33,9 @@ class AutenticacaoControllerTest {
                 "Ana Silva", "ana@example.com", "hash-que-nao-deve-sair");
         when(cadastro.cadastrar("Ana Silva", "ana@example.com", "SenhaDeTeste123!"))
                 .thenReturn(usuario);
-        MockMvc mvc = MockMvcBuilders.standaloneSetup(new AutenticacaoController(cadastro))
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(new AutenticacaoController(cadastro,
+                        mock(AutenticarUsuarioService.class), mock(SessionAuthenticationStrategy.class),
+                        mock(SecurityContextRepository.class)))
                 .setControllerAdvice(new ApiExceptionHandler()).build();
         ObjectMapper mapper = new ObjectMapper();
 
