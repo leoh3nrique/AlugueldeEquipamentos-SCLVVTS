@@ -13,8 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -95,5 +98,15 @@ public class AutenticacaoController {
                     .body(new ApiExceptionHandler.Erro("Sessão não autenticada"));
         }
         return ResponseEntity.ok(usuario);
+    }
+
+    @ApiResponse(responseCode = "204", description = "Sessão encerrada", content = @Content)
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(HttpServletRequest requisicao, HttpServletResponse resposta, Authentication autenticacao) {
+        var logout = new SecurityContextLogoutHandler();
+        logout.setSecurityContextRepository(contextos);
+        logout.logout(requisicao, resposta, autenticacao);
+        new CookieClearingLogoutHandler("JSESSIONID").logout(requisicao, resposta, autenticacao);
     }
 }

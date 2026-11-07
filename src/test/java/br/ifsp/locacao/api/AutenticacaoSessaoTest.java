@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("UnitTest")
@@ -182,6 +183,66 @@ class AutenticacaoSessaoTest {
                 .andReturn();
 
         assertThat(mapper.readTree(consulta.getResponse().getContentAsByteArray())).isEqualTo(esperado);
+        verify(autenticacao).autenticar("ana@example.com", "SenhaDeTeste123!");
+        verifyNoMoreInteractions(autenticacao);
+    }
+
+    @Test
+    @DisplayName("Logout retorna 204, remove o cookie e invalida a sessão autenticada")
+    void logoutEncerraSessaoAutenticada() throws Exception {
+        Usuario usuario = new Usuario(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "Ana Silva", "ana@example.com", "hash-que-nao-deve-sair");
+        when(autenticacao.autenticar("ana@example.com", "SenhaDeTeste123!"))
+                .thenReturn(Optional.of(usuario));
+        MockHttpSession sessao = new MockHttpSession();
+        var respostaCsrf = mvc.perform(get("/api/auth/csrf").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var dadosCsrf = mapper.readTree(respostaCsrf.getResponse().getContentAsByteArray());
+        assertThat(dadosCsrf.size()).isEqualTo(2);
+        assertThat(dadosCsrf.path("token").isTextual()).isTrue();
+        assertThat(dadosCsrf.path("token").textValue()).isNotBlank();
+        assertThat(dadosCsrf.path("headerName").textValue()).isEqualTo("X-CSRF-TOKEN");
+        var login = mvc.perform(post("/api/auth/login")
+                        .session(sessao)
+                        .header(dadosCsrf.path("headerName").textValue(), dadosCsrf.path("token").textValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"ana@example.com","senha":"SenhaDeTeste123!"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        assertThat(mapper.readTree(login.getResponse().getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"id":"00000000-0000-0000-0000-000000000001","nome":"Ana Silva","email":"ana@example.com"}
+                """));
+        var csrfAposLogin = mvc.perform(get("/api/auth/csrf").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var novoCsrf = mapper.readTree(csrfAposLogin.getResponse().getContentAsByteArray());
+        assertThat(novoCsrf.size()).isEqualTo(2);
+        assertThat(novoCsrf.path("token").isTextual()).isTrue();
+        assertThat(novoCsrf.path("token").textValue()).isNotBlank();
+        assertThat(novoCsrf.path("headerName").textValue()).isEqualTo("X-CSRF-TOKEN");
+
+        mvc.perform(post("/api/auth/logout")
+                        .session(sessao)
+                        .header(novoCsrf.path("headerName").textValue(), novoCsrf.path("token").textValue()))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""))
+                .andExpect(cookie().maxAge("JSESSIONID", 0))
+                .andExpect(cookie().path("JSESSIONID", "/"));
+
+        assertThat(sessao.isInvalid()).isTrue();
+        var consulta = mvc.perform(get("/api/auth/sessao"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        assertThat(mapper.readTree(consulta.getResponse().getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"mensagem":"Sessão não autenticada"}
+                """));
         verify(autenticacao).autenticar("ana@example.com", "SenhaDeTeste123!");
         verifyNoMoreInteractions(autenticacao);
     }
