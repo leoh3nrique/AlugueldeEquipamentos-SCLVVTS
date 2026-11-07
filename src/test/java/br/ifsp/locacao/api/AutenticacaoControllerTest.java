@@ -5,12 +5,16 @@ import br.ifsp.locacao.application.CadastrarUsuarioService;
 import br.ifsp.locacao.domain.Usuario;
 import br.ifsp.locacao.domain.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.test.web.servlet.MockMvc;
@@ -89,5 +93,47 @@ class AutenticacaoControllerTest {
         assertThat(mapper.readTree(resposta.getContentAsByteArray()))
                 .isEqualTo(mapper.createObjectNode().put("mensagem", mensagem));
         verify(repository, never()).salvar(any(Usuario.class));
+    }
+
+    @Test
+    @DisplayName("Login disponibiliza o usuário autenticado na própria requisição")
+    void loginAutenticaARequisicaoAtual() throws Exception {
+        AutenticarUsuarioService autenticacao = mock(AutenticarUsuarioService.class);
+        Usuario usuario = new Usuario(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "Ana Silva", "ana@example.com", "hash-que-nao-deve-sair");
+        when(autenticacao.autenticar("ana@example.com", "SenhaDeTeste123!"))
+                .thenReturn(Optional.of(usuario));
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(new AutenticacaoController(
+                        mock(CadastrarUsuarioService.class), autenticacao,
+                        mock(SessionAuthenticationStrategy.class), mock(SecurityContextRepository.class)))
+                .addFilter((requisicao, resposta, cadeia) -> {
+                    cadeia.doFilter(requisicao, resposta);
+                    var requisicaoAutenticada = new SecurityContextHolderAwareRequestWrapper(
+                            (HttpServletRequest) requisicao, "ROLE_");
+                    assertThat(requisicaoAutenticada.getUserPrincipal()).isInstanceOf(Authentication.class);
+                    Authentication principal = (Authentication) requisicaoAutenticada.getUserPrincipal();
+                    assertThat(principal.isAuthenticated()).isTrue();
+                    assertThat(principal.getPrincipal()).isEqualTo(new AutenticacaoController.UsuarioSaida(
+                            usuario.id(), "Ana Silva", "ana@example.com"));
+                    assertThat(principal.getCredentials()).isNull();
+                }).build();
+        ObjectMapper mapper = new ObjectMapper();
+        SecurityContextHolder.clearContext();
+        try {
+            var resposta = mvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"email":"ana@example.com","senha":"SenhaDeTeste123!"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andReturn().getResponse();
+
+            assertThat(mapper.readTree(resposta.getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                    {"id":"00000000-0000-0000-0000-000000000001","nome":"Ana Silva","email":"ana@example.com"}
+                    """));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 }
