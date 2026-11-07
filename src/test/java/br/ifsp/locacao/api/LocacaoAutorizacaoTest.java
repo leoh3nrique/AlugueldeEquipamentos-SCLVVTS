@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -212,6 +213,49 @@ class LocacaoAutorizacaoTest {
             verify(consultar).buscarPorId(id);
             verifyNoInteractions(criar, alterar, retirada, renovar, devolver, cancelar);
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("escritasSemCsrfValido")
+    @DisplayName("Escritas sem CSRF válido retornam 403 sem executar serviços ou encerrar a sessão")
+    void recusaEscritaSemCsrfValido(String metodo, String caminho, String corpo, boolean tokenInvalido) throws Exception {
+        MockHttpSession sessao = sessaoDoUsuario();
+        var csrf = obterCsrf(sessao);
+        String idAnterior = sessao.getId();
+        var pedido = request(HttpMethod.valueOf(metodo), caminho).session(sessao)
+                .contentType(MediaType.APPLICATION_JSON).content(corpo);
+        if (tokenInvalido) pedido.header(csrf.path("headerName").textValue(), "token-invalido");
+
+        var resposta = mvc.perform(pedido)
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        assertThat(mapper.readTree(resposta.getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"mensagem":"Acesso não permitido"}
+                """));
+        verifyNoInteractions(criar, alterar, retirada, renovar, devolver, cancelar, consultar, cadastro, autenticacao);
+        assertThat(sessao.isInvalid()).isFalse();
+        assertThat(sessao.getId()).isEqualTo(idAnterior);
+        SecurityContext contexto = (SecurityContext) sessao.getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        assertThat(contexto).isNotNull();
+        assertThat(contexto.getAuthentication().isAuthenticated()).isTrue();
+        assertThat(contexto.getAuthentication().getPrincipal()).isEqualTo(new AutenticacaoController.UsuarioSaida(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"), "Ana Silva", "ana@example.com"));
+    }
+
+    private static Stream<Arguments> escritasSemCsrfValido() {
+        return Stream.concat(operacoesDeLocacao().filter(operacao -> !operacao.get()[0].equals("GET")), Stream.of(
+                Arguments.of("POST", "/api/auth/cadastro", """
+                        {"nome":"Ana Silva","email":"ana@example.com","senha":"SenhaDeTeste123!"}
+                        """),
+                Arguments.of("POST", "/api/auth/login", """
+                        {"email":"ana@example.com","senha":"SenhaDeTeste123!"}
+                        """),
+                Arguments.of("POST", "/api/auth/logout", "")))
+                .flatMap(operacao -> Stream.of(
+                        Arguments.of(operacao.get()[0], operacao.get()[1], operacao.get()[2], false),
+                        Arguments.of(operacao.get()[0], operacao.get()[1], operacao.get()[2], true)));
     }
 
     private MockHttpSession sessaoDoUsuario() {
