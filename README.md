@@ -52,6 +52,20 @@ A análise usa as classes com nome terminado em `Test`, incluindo os testes SQLi
 Os relatórios HTML e XML são gerados em `target/pit-reports/`.
 Os mutantes equivalentes estão justificados em [Mutation.md](Mutation.md).
 
+## Executar o front-end
+
+A interface em React e Vite fica em [frontend/](frontend/). Requisito: Node.js 20.19 ou superior.
+
+Com o back-end em execução na porta 8080, rode em outro terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:5173`, crie uma conta em cadastro e entre com ela. As chamadas a `/api` são encaminhadas pelo Vite para o back-end, sem necessidade de configurar CORS. O build de produção e os detalhes da autenticação estão em [frontend/README.md](frontend/README.md).
+
 ## API REST
 
 Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` para consultar e testar os endpoints. A especificação OpenAPI em JSON fica em `http://localhost:8080/v3/api-docs`.
