@@ -57,25 +57,31 @@ public class LocacaoController {
         Locacao l=criar.criar(entrada.clienteId(), entrada.periodo(), entrada.itensDominio());
         return ResponseEntity.created(URI.create("/api/locacoes/"+l.getId())).body(LocacaoSaida.de(l));
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @GetMapping("/{id}") public LocacaoSaida buscar(@PathVariable UUID id) { return LocacaoSaida.de(consultar.buscarPorId(id)); }
     @PreAuthorize("#clienteId == authentication.principal.id.toString()")
     @GetMapping public List<LocacaoSaida> listar(@RequestParam String clienteId, @RequestParam(required=false) EstadoLocacao estado) {
         List<Locacao> resultado=estado==null ? consultar.consultarPorCliente(clienteId) : consultar.consultarPorCliente(clienteId,estado);
         return resultado.stream().map(LocacaoSaida::de).toList();
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @PutMapping("/{id}") public LocacaoSaida alterar(@PathVariable UUID id, @RequestBody ReservaEntrada entrada) {
         return LocacaoSaida.de(alterar.alterar(id, entrada.periodo(), entrada.itensDominio()));
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @PostMapping("/{id}/retirada") public LocacaoSaida retirar(@PathVariable UUID id, @RequestBody DataEntrada entrada) {
         return LocacaoSaida.de(retirada.confirmar(id, entrada.data()));
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @PostMapping("/{id}/renovacoes") public LocacaoSaida renovar(@PathVariable UUID id, @RequestBody RenovacaoEntrada entrada) {
         if (entrada.dias()==null) throw new IllegalArgumentException("Dias são obrigatórios");
         return LocacaoSaida.de(renovar.renovar(id, entrada.dias(), entrada.data()));
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @PostMapping("/{id}/devolucoes") public LocacaoSaida devolver(@PathVariable UUID id, @RequestBody DevolucaoEntrada entrada) {
         if (entrada.codigos()==null) throw new IllegalArgumentException("Códigos são obrigatórios");
         return LocacaoSaida.de(devolver.registrar(id, entrada.codigos().stream().map(CodigoEquipamento::new).toList(), entrada.data()));
     }
+    @PreAuthorize("@consultarLocacoesService.buscarPorId(#id).clienteId == authentication.principal.id.toString()")
     @PostMapping("/{id}/cancelamento") public LocacaoSaida cancelar(@PathVariable UUID id) { return LocacaoSaida.de(cancelar.cancelar(id)); }
 }

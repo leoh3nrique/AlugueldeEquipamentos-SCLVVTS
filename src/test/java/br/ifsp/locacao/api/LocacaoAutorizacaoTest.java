@@ -5,6 +5,7 @@ import br.ifsp.locacao.domain.*;
 import br.ifsp.locacao.infrastructure.SecurityConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -56,7 +58,7 @@ class LocacaoAutorizacaoTest {
     @MockitoBean private RenovarLocacaoService renovar;
     @MockitoBean private RegistrarDevolucaoService devolver;
     @MockitoBean private CancelarLocacaoService cancelar;
-    @MockitoBean private ConsultarLocacoesService consultar;
+    @MockitoBean(name = "consultarLocacoesService") private ConsultarLocacoesService consultar;
     @MockitoBean private CadastrarUsuarioService cadastro;
     @MockitoBean private AutenticarUsuarioService autenticacao;
 
@@ -118,6 +120,97 @@ class LocacaoAutorizacaoTest {
                     {"mensagem":"Acesso não permitido"}
                     """));
             verifyNoInteractions(criar, alterar, retirada, renovar, devolver, cancelar, consultar);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"buscar,true", "buscar,false", "alterar,true", "alterar,false", "retirar,true", "retirar,false",
+            "renovar,true", "renovar,false", "devolver,true", "devolver,false", "cancelar,true", "cancelar,false"})
+    @DisplayName("Operações por ID permitem apenas o proprietário da locação")
+    void restringeOperacoesAoProprietario(String operacao, boolean proprietario) throws Exception {
+        String clienteId = proprietario ? "00000000-0000-0000-0000-000000000001"
+                : "00000000-0000-0000-0000-000000000002";
+        Locacao locacao = reservaDoCliente(clienteId);
+        UUID id = locacao.getId();
+        ObjectNode esperado = (ObjectNode) jsonDaReservaEsperado(id, clienteId);
+        ObjectNode itemEsperado = (ObjectNode) esperado.path("itens").get(0);
+        LocalDate dia10 = LocalDate.of(2026, 11, 10);
+        LocalDate dia11 = LocalDate.of(2026, 11, 11);
+        LocalDate dia12 = LocalDate.of(2026, 11, 12);
+        PeriodoLocacao novoPeriodo = new PeriodoLocacao(dia10, LocalDate.of(2026, 11, 14));
+        String caminho = "/api/locacoes/" + id;
+        HttpMethod metodo = HttpMethod.POST;
+        String corpo = "";
+        switch (operacao) {
+            case "buscar" -> metodo = HttpMethod.GET;
+            case "alterar" -> {
+                metodo = HttpMethod.PUT;
+                corpo = corpoReserva(clienteId).replace("2026-11-13", "2026-11-14");
+                locacao.alterar(novoPeriodo, List.of(new ItemLocacao(new CodigoEquipamento("CAM01"),
+                        "Câmera", new Dinheiro(new BigDecimal("100.00")))));
+                esperado.put("fim", "2026-11-14").put("valorNormal", 400.00).put("valorTotal", 400.00);
+                itemEsperado.put("fimContratado", "2026-11-14");
+            }
+            case "retirar" -> {
+                caminho += "/retirada";
+                corpo = "{\"data\":\"2026-11-10\"}";
+                locacao.confirmarRetirada(dia10);
+                esperado.put("estado", "EM_ANDAMENTO");
+            }
+            case "renovar" -> {
+                caminho += "/renovacoes";
+                corpo = "{\"dias\":3,\"data\":\"2026-11-11\"}";
+                locacao.confirmarRetirada(dia10);
+                locacao.renovar(3, dia11);
+                esperado.put("estado", "EM_ANDAMENTO").put("renovacoes", 1).put("fim", "2026-11-16")
+                        .put("valorNormal", 600.00).put("valorTotal", 600.00);
+                itemEsperado.put("fimContratado", "2026-11-16");
+            }
+            case "devolver" -> {
+                caminho += "/devolucoes";
+                corpo = "{\"codigos\":[\"CAM01\"],\"data\":\"2026-11-12\"}";
+                locacao.confirmarRetirada(dia10);
+                locacao.registrarDevolucao(List.of(new CodigoEquipamento("CAM01")), dia12);
+                esperado.put("estado", "FINALIZADA");
+                itemEsperado.put("devolvido", true).put("dataDevolucao", "2026-11-12");
+            }
+            case "cancelar" -> {
+                caminho += "/cancelamento";
+                locacao.cancelar();
+                esperado.put("estado", "CANCELADA");
+            }
+        }
+        when(consultar.buscarPorId(id)).thenReturn(locacao);
+        when(alterar.alterar(eq(id), any(PeriodoLocacao.class), anyList())).thenReturn(locacao);
+        when(retirada.confirmar(id, dia10)).thenReturn(locacao);
+        when(renovar.renovar(id, 3, dia11)).thenReturn(locacao);
+        when(devolver.registrar(id, List.of(new CodigoEquipamento("CAM01")), dia12)).thenReturn(locacao);
+        when(cancelar.cancelar(id)).thenReturn(locacao);
+        MockHttpSession sessao = sessaoDoUsuario();
+        var csrf = obterCsrf(sessao);
+
+        var resposta = mvc.perform(request(metodo, caminho).session(sessao)
+                        .header(csrf.path("headerName").textValue(), csrf.path("token").textValue())
+                        .contentType(MediaType.APPLICATION_JSON).content(corpo))
+                .andExpect(status().is(proprietario ? 200 : 403))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        if (proprietario) {
+            assertThat(mapper.readTree(resposta.getContentAsByteArray())).isEqualTo(esperado);
+            switch (operacao) {
+                case "buscar" -> verify(consultar, atLeastOnce()).buscarPorId(id);
+                case "alterar" -> verify(alterar).alterar(eq(id), eq(novoPeriodo), anyList());
+                case "retirar" -> verify(retirada).confirmar(id, dia10);
+                case "renovar" -> verify(renovar).renovar(id, 3, dia11);
+                case "devolver" -> verify(devolver).registrar(id, List.of(new CodigoEquipamento("CAM01")), dia12);
+                case "cancelar" -> verify(cancelar).cancelar(id);
+            }
+        } else {
+            assertThat(mapper.readTree(resposta.getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                    {"mensagem":"Acesso não permitido"}
+                    """));
+            verify(consultar).buscarPorId(id);
+            verifyNoInteractions(criar, alterar, retirada, renovar, devolver, cancelar);
         }
     }
 
