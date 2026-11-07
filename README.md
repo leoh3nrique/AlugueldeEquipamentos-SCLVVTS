@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 165 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 20 testes unitários de cadastro, 15 testes unitários de autenticação e 8 testes de integração com SQLite real.
+O build executa 166 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 20 testes unitários de cadastro, 16 testes unitários de autenticação e 8 testes de integração com SQLite real.
 
 As três suítes podem ser executadas separadamente:
 
@@ -36,7 +36,7 @@ As três suítes podem ser executadas separadamente:
 ./mvnw -Dtest=UnitTestSuite test
 ```
 
-As suítes executam, respectivamente, 46, 31 e 157 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+As suítes executam, respectivamente, 46, 31 e 158 casos. Os testes SQLite usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
 
 Os caminhos não alcançáveis estão justificados em [Structural.md](Structural.md).
 
@@ -61,6 +61,7 @@ Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` 
 | POST | `/api/auth/cadastro` | Cadastrar usuário (201, com `id`, `nome` e `email`) |
 | GET | `/api/auth/csrf` | Obter token CSRF e o nome do cabeçalho (200) |
 | POST | `/api/auth/login` | Autenticar usuário (200, com `id`, `nome` e `email`) e iniciar sessão |
+| GET | `/api/auth/sessao` | Consultar usuário da sessão (200) ou informar sessão não autenticada (401) |
 | POST | `/api/locacoes` | Criar reserva (201 e cabeçalho Location) |
 | GET | `/api/locacoes/{id}` | Buscar por identificador |
 | GET | `/api/locacoes?clienteId=cliente-1&estado=EM_ANDAMENTO` | Listar por cliente; estado opcional |
@@ -70,7 +71,7 @@ Com a aplicação em execução, acesse `http://localhost:8080/swagger-ui.html` 
 | POST | `/api/locacoes/{id}/devolucoes` | Devolver um ou mais equipamentos |
 | POST | `/api/locacoes/{id}/cancelamento` | Cancelar reserva aberta |
 
-O cadastro recebe `nome`, `email` e `senha` no corpo JSON e retorna apenas `id`, `nome` e `email`. Ele não inicia uma sessão. O login recebe `email` e `senha`, retorna os mesmos três campos do usuário e inicia uma sessão por cookie `JSESSIONID`. O ID da sessão e o token CSRF são trocados no login. Senha incorreta e usuário inexistente retornam o mesmo erro 401: `{"mensagem":"E-mail ou senha inválidos"}`, sem autenticar a sessão. A consulta de sessão, o logout e a autorização das locações ainda estão em implementação. Antes de uma operação de escrita, obtenha `token` e `headerName` em `/api/auth/csrf`, mantenha o cookie da sessão e envie o token no cabeçalho indicado. Após o login, obtenha um novo token.
+O cadastro recebe `nome`, `email` e `senha` no corpo JSON e retorna apenas `id`, `nome` e `email`. Ele não inicia uma sessão. O login recebe `email` e `senha`, retorna os mesmos três campos do usuário e inicia uma sessão por cookie `JSESSIONID`. O ID da sessão e o token CSRF são trocados no login. Senha incorreta e usuário inexistente retornam o mesmo erro 401: `{"mensagem":"E-mail ou senha inválidos"}`, sem autenticar a sessão. A consulta de sessão retorna `id`, `nome` e `email` do usuário autenticado; sem login, retorna 401 com `{"mensagem":"Sessão não autenticada"}`. O logout e a autorização das locações ainda estão em implementação. Antes de uma operação de escrita, obtenha `token` e `headerName` em `/api/auth/csrf`, mantenha o cookie da sessão e envie o token no cabeçalho indicado. Após o login, obtenha um novo token.
 
 Exemplo de criação (com o cookie salvo em `cookies.txt` e o token obtido em `/api/auth/csrf` na variável `CSRF_TOKEN`):
 

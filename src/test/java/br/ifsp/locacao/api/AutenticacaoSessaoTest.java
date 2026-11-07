@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -132,5 +133,56 @@ class AutenticacaoSessaoTest {
         assertThat(sessao.getId()).isEqualTo(idAnterior);
         assertThat(csrfTokens.loadToken(resultado.getRequest()).getToken()).isEqualTo(tokenAnterior.getToken());
         verify(autenticacao).autenticar(email, senha);
+    }
+
+    @Test
+    @DisplayName("Consulta de sessão retorna 401 antes do login e os dados do usuário depois")
+    void consultaSessaoAntesEDepoisDoLogin() throws Exception {
+        Usuario usuario = new Usuario(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "Ana Silva", "ana@example.com", "hash-que-nao-deve-sair");
+        when(autenticacao.autenticar("ana@example.com", "SenhaDeTeste123!"))
+                .thenReturn(Optional.of(usuario));
+        MockHttpSession sessao = new MockHttpSession();
+
+        var semLogin = mvc.perform(get("/api/auth/sessao").session(sessao))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        assertThat(mapper.readTree(semLogin.getResponse().getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"mensagem":"Sessão não autenticada"}
+                """));
+        assertThat(sessao.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY)).isNull();
+        var respostaCsrf = mvc.perform(get("/api/auth/csrf").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var dadosCsrf = mapper.readTree(respostaCsrf.getResponse().getContentAsByteArray());
+        assertThat(dadosCsrf.size()).isEqualTo(2);
+        assertThat(dadosCsrf.path("token").isTextual()).isTrue();
+        assertThat(dadosCsrf.path("token").textValue()).isNotBlank();
+        assertThat(dadosCsrf.path("headerName").textValue()).isEqualTo("X-CSRF-TOKEN");
+        var esperado = mapper.readTree("""
+                {"id":"00000000-0000-0000-0000-000000000001","nome":"Ana Silva","email":"ana@example.com"}
+                """);
+
+        var login = mvc.perform(post("/api/auth/login")
+                        .session(sessao)
+                        .header(dadosCsrf.path("headerName").textValue(), dadosCsrf.path("token").textValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"ana@example.com","senha":"SenhaDeTeste123!"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        assertThat(mapper.readTree(login.getResponse().getContentAsByteArray())).isEqualTo(esperado);
+        var consulta = mvc.perform(get("/api/auth/sessao").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        assertThat(mapper.readTree(consulta.getResponse().getContentAsByteArray())).isEqualTo(esperado);
+        verify(autenticacao).autenticar("ana@example.com", "SenhaDeTeste123!");
+        verifyNoMoreInteractions(autenticacao);
     }
 }

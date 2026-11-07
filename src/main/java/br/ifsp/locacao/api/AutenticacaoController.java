@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -78,5 +80,20 @@ public class AutenticacaoController {
         SecurityContextHolder.setContext(contexto);
         contextos.saveContext(contexto, requisicao, resposta);
         return saida;
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuário da sessão",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioSaida.class))),
+            @ApiResponse(responseCode = "401", description = "Sessão não autenticada",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class)))
+    })
+    @GetMapping("/sessao")
+    public ResponseEntity<?> consultarSessao(@AuthenticationPrincipal UsuarioSaida usuario) {
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiExceptionHandler.Erro("Sessão não autenticada"));
+        }
+        return ResponseEntity.ok(usuario);
     }
 }
