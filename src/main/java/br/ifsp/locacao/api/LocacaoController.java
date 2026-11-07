@@ -3,6 +3,7 @@ package br.ifsp.locacao.api;
 import br.ifsp.locacao.application.*;
 import br.ifsp.locacao.domain.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/locacoes")
+@SecurityRequirement(name = "sessao")
 public class LocacaoController {
     private final CriarLocacaoService criar;
     private final AlterarLocacaoService alterar;

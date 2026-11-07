@@ -1,5 +1,11 @@
 package br.ifsp.locacao.infrastructure;
 
+import br.ifsp.locacao.api.ApiExceptionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import org.springframework.http.MediaType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +22,7 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import java.util.List;
 
 @Configuration
+@SecurityScheme(name = "sessao", type = SecuritySchemeType.APIKEY, in = SecuritySchemeIn.COOKIE, paramName = "JSESSIONID")
 public class SecurityConfiguration {
     @Bean
     SecurityContextRepository securityContextRepository() {
@@ -36,9 +43,16 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository contexts,
-                                           CsrfTokenRepository csrfTokens) throws Exception {
+                                           CsrfTokenRepository csrfTokens, ObjectMapper mapper) throws Exception {
         return http
-                .authorizeHttpRequests(regras -> regras.anyRequest().permitAll())
+                .authorizeHttpRequests(regras -> regras
+                        .requestMatchers("/api/locacoes", "/api/locacoes/**").authenticated()
+                        .anyRequest().permitAll())
+                .exceptionHandling(erros -> erros.authenticationEntryPoint((requisicao, resposta, erro) -> {
+                    resposta.setStatus(401);
+                    resposta.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    mapper.writeValue(resposta.getOutputStream(), new ApiExceptionHandler.Erro("Sessão não autenticada"));
+                }))
                 .securityContext(contexto -> contexto.securityContextRepository(contexts))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens))
                 .build();
