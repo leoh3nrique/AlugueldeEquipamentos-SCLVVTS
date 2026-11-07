@@ -14,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
@@ -32,15 +33,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Tag("UnitTest")
 class LocacaoControllerStructuralTest {
     private CriarLocacaoService criar;
+    private RenovarLocacaoService renovar;
     private ObjectMapper mapper;
     private MockMvc mvc;
 
     @BeforeEach
     void preparaApi() {
         criar = mock(CriarLocacaoService.class);
+        renovar = mock(RenovarLocacaoService.class);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         mvc = MockMvcBuilders.standaloneSetup(new LocacaoController(criar, mock(AlterarLocacaoService.class),
-                        mock(ConfirmarRetiradaService.class), mock(RenovarLocacaoService.class),
+                        mock(ConfirmarRetiradaService.class), renovar,
                         mock(RegistrarDevolucaoService.class), mock(CancelarLocacaoService.class),
                         mock(ConsultarLocacoesService.class)))
                 .setControllerAdvice(new ApiExceptionHandler())
@@ -64,5 +67,23 @@ class LocacaoControllerStructuralTest {
                 {"mensagem":"Itens são obrigatórios"}
                 """));
         verifyNoInteractions(criar);
+    }
+
+    @Test
+    @DisplayName("Renovação sem quantidade de dias retorna 400 sem chegar ao serviço")
+    void renovacaoSemDiasRetornaErro() throws Exception {
+        var resposta = mvc.perform(post("/api/locacoes/00000000-0000-0000-0000-000000000001/renovacoes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"data":"2026-11-13"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertThat(mapper.readTree(resposta.getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"mensagem":"Dias são obrigatórios"}
+                """));
+        verifyNoInteractions(renovar);
     }
 }
