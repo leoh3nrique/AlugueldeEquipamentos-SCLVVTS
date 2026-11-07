@@ -5,6 +5,7 @@ import br.ifsp.locacao.domain.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import java.math.BigDecimal;
 import java.time.*;
@@ -51,11 +52,13 @@ public class LocacaoController {
         }
     }
     @ApiResponse(responseCode = "201", description = "Reserva criada")
+    @PreAuthorize("#entrada.clienteId == authentication.principal.id.toString()")
     @PostMapping public ResponseEntity<LocacaoSaida> criar(@RequestBody ReservaEntrada entrada) {
         Locacao l=criar.criar(entrada.clienteId(), entrada.periodo(), entrada.itensDominio());
         return ResponseEntity.created(URI.create("/api/locacoes/"+l.getId())).body(LocacaoSaida.de(l));
     }
     @GetMapping("/{id}") public LocacaoSaida buscar(@PathVariable UUID id) { return LocacaoSaida.de(consultar.buscarPorId(id)); }
+    @PreAuthorize("#clienteId == authentication.principal.id.toString()")
     @GetMapping public List<LocacaoSaida> listar(@RequestParam String clienteId, @RequestParam(required=false) EstadoLocacao estado) {
         List<Locacao> resultado=estado==null ? consultar.consultarPorCliente(clienteId) : consultar.consultarPorCliente(clienteId,estado);
         return resultado.stream().map(LocacaoSaida::de).toList();
