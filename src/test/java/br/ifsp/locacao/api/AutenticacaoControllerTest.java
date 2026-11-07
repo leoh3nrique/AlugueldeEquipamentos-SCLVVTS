@@ -11,8 +11,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("UnitTest")
@@ -135,5 +138,23 @@ class AutenticacaoControllerTest {
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    @Test
+    @DisplayName("Logout grava um contexto vazio no repositório de contextos da aplicação")
+    void logoutLimpaContextoNoRepositorioConfigurado() throws Exception {
+        SecurityContextRepository contextos = mock(SecurityContextRepository.class);
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(new AutenticacaoController(
+                mock(CadastrarUsuarioService.class), mock(AutenticarUsuarioService.class),
+                mock(SessionAuthenticationStrategy.class), contextos)).build();
+
+        mvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""))
+                .andExpect(cookie().maxAge("JSESSIONID", 0));
+
+        ArgumentCaptor<SecurityContext> contexto = ArgumentCaptor.forClass(SecurityContext.class);
+        verify(contextos).saveContext(contexto.capture(), any(), any());
+        assertThat(contexto.getValue().getAuthentication()).isNull();
     }
 }

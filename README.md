@@ -26,7 +26,7 @@ Para compilar e executar os testes disponíveis:
 ./mvnw verify
 ```
 
-O build executa 225 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 24 testes unitários de cadastro, 26 testes unitários de autenticação, 44 testes de autorização e 9 testes de integração: 8 com SQLite real e 1 do fluxo HTTP de autenticação com banco temporário.
+O build executa 226 casos: 46 execuções dos 45 cenários BDD, 31 testes funcionais, 28 testes estruturais, 17 testes de mutação, 24 testes unitários de cadastro, 27 testes unitários de autenticação, 44 testes de autorização e 9 testes de integração: 8 com SQLite real e 1 do fluxo HTTP de autenticação com banco temporário.
 
 As três suítes podem ser executadas separadamente:
 
@@ -36,7 +36,7 @@ As três suítes podem ser executadas separadamente:
 ./mvnw -Dtest=UnitTestSuite test
 ```
 
-As suítes executam, respectivamente, 46, 31 e 216 casos. Os testes de integração usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
+As suítes executam, respectivamente, 46, 31 e 217 casos. Os testes de integração usam a tag `IntegrationTest` e ficam fora das suítes unitárias.
 
 Os caminhos não alcançáveis estão justificados em [Structural.md](Structural.md).
 
