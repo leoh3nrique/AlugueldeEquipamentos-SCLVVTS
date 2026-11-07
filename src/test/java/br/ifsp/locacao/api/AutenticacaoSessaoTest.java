@@ -28,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -134,6 +135,47 @@ class AutenticacaoSessaoTest {
         assertThat(sessao.getId()).isEqualTo(idAnterior);
         assertThat(csrfTokens.loadToken(resultado.getRequest()).getToken()).isEqualTo(tokenAnterior.getToken());
         verify(autenticacao).autenticar(email, senha);
+    }
+
+    @ParameterizedTest(name = "[{index}] {1}: {0}")
+    @CsvSource(delimiter = '|', textBlock = """
+            {"senha":"SenhaDeTeste123!"} | E-mail é obrigatório
+            {"email":null,"senha":"SenhaDeTeste123!"} | E-mail é obrigatório
+            {"email":"","senha":"SenhaDeTeste123!"} | E-mail é obrigatório
+            {"email":"   ","senha":"SenhaDeTeste123!"} | E-mail é obrigatório
+            {"email":"ana@example.com"} | Senha é obrigatória
+            {"email":"ana@example.com","senha":null} | Senha é obrigatória
+            {"email":"ana@example.com","senha":""} | Senha é obrigatória
+            {"email":"ana@example.com","senha":"   "} | Senha é obrigatória
+            """)
+    @DisplayName("Login sem e-mail ou senha retorna 400 e não autentica a sessão")
+    void loginRejeitaCamposObrigatorios(String corpo, String mensagem) throws Exception {
+        MockHttpSession sessao = new MockHttpSession();
+        String idAnterior = sessao.getId();
+        var respostaCsrf = mvc.perform(get("/api/auth/csrf").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var dadosCsrf = mapper.readTree(respostaCsrf.getResponse().getContentAsByteArray());
+        assertThat(dadosCsrf.size()).isEqualTo(2);
+        assertThat(dadosCsrf.path("token").isTextual()).isTrue();
+        assertThat(dadosCsrf.path("token").textValue()).isNotBlank();
+        assertThat(dadosCsrf.path("headerName").textValue()).isEqualTo("X-CSRF-TOKEN");
+
+        var resultado = mvc.perform(post("/api/auth/login")
+                        .session(sessao)
+                        .header(dadosCsrf.path("headerName").textValue(), dadosCsrf.path("token").textValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(corpo))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        assertThat(mapper.readTree(resultado.getResponse().getContentAsByteArray()))
+                .isEqualTo(mapper.createObjectNode().put("mensagem", mensagem));
+        assertThat(sessao.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY)).isNull();
+        assertThat(sessao.getId()).isEqualTo(idAnterior);
+        verifyNoInteractions(cadastro, autenticacao);
     }
 
     @Test

@@ -67,12 +67,20 @@ public class AutenticacaoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário autenticado",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioSaida.class))),
+            @ApiResponse(responseCode = "400", description = "E-mail ou senha não informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class))),
             @ApiResponse(responseCode = "401", description = "E-mail ou senha inválidos",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class)))
     })
     @PostMapping("/login")
     public UsuarioSaida login(@RequestBody LoginEntrada entrada, HttpServletRequest requisicao,
                               HttpServletResponse resposta) {
+        if (entrada.email() == null || entrada.email().isBlank()) {
+            throw new IllegalArgumentException("E-mail é obrigatório");
+        }
+        if (entrada.senha() == null || entrada.senha().isBlank()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
         Usuario usuario = autenticacao.autenticar(entrada.email(), entrada.senha())
                 .orElseThrow(() -> new BadCredentialsException("E-mail ou senha inválidos"));
         UsuarioSaida saida = new UsuarioSaida(usuario.id(), usuario.nome(), usuario.email());
