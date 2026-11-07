@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -93,5 +95,42 @@ class AutenticacaoSessaoTest {
         assertThat(Optional.ofNullable(tokenAtual).map(CsrfToken::getToken))
                 .isNotEqualTo(Optional.of(tokenAnterior.getToken()));
         verify(autenticacao).autenticar("ana@example.com", "SenhaDeTeste123!");
+    }
+
+    @ParameterizedTest
+    @CsvSource({"ana@example.com, SenhaErrada123!", "inexistente@example.com, SenhaDeTeste123!"})
+    @DisplayName("Login inválido retorna 401 com a mesma mensagem e não autentica a sessão")
+    void loginRecusaCredenciaisInvalidas(String email, String senha) throws Exception {
+        when(autenticacao.autenticar(email, senha)).thenReturn(Optional.empty());
+        MockHttpSession sessao = new MockHttpSession();
+        String idAnterior = sessao.getId();
+        var respostaCsrf = mvc.perform(get("/api/auth/csrf").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var dadosCsrf = mapper.readTree(respostaCsrf.getResponse().getContentAsByteArray());
+        assertThat(dadosCsrf.size()).isEqualTo(2);
+        assertThat(dadosCsrf.path("token").isTextual()).isTrue();
+        assertThat(dadosCsrf.path("token").textValue()).isNotBlank();
+        assertThat(dadosCsrf.path("headerName").textValue()).isEqualTo("X-CSRF-TOKEN");
+        var tokenAnterior = csrfTokens.loadToken(respostaCsrf.getRequest());
+        assertThat(tokenAnterior).isNotNull();
+
+        var resultado = mvc.perform(post("/api/auth/login")
+                        .session(sessao)
+                        .header(dadosCsrf.path("headerName").textValue(), dadosCsrf.path("token").textValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(new AutenticacaoController.LoginEntrada(email, senha))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        assertThat(mapper.readTree(resultado.getResponse().getContentAsByteArray())).isEqualTo(mapper.readTree("""
+                {"mensagem":"E-mail ou senha inválidos"}
+                """));
+        assertThat(sessao.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY)).isNull();
+        assertThat(sessao.getId()).isEqualTo(idAnterior);
+        assertThat(csrfTokens.loadToken(resultado.getRequest()).getToken()).isEqualTo(tokenAnterior.getToken());
+        verify(autenticacao).autenticar(email, senha);
     }
 }

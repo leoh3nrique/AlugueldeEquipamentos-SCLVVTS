@@ -3,6 +3,10 @@ package br.ifsp.locacao.api;
 import br.ifsp.locacao.application.AutenticarUsuarioService;
 import br.ifsp.locacao.application.CadastrarUsuarioService;
 import br.ifsp.locacao.domain.Usuario;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -55,6 +59,12 @@ public class AutenticacaoController {
         return new CsrfSaida(token.getToken(), token.getHeaderName());
     }
 
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuário autenticado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioSaida.class))),
+            @ApiResponse(responseCode = "401", description = "E-mail ou senha inválidos",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiExceptionHandler.Erro.class)))
+    })
     @PostMapping("/login")
     public UsuarioSaida login(@RequestBody LoginEntrada entrada, HttpServletRequest requisicao,
                               HttpServletResponse resposta) {
